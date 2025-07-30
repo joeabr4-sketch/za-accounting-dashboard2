@@ -3,1159 +3,1762 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZA Accounting Dashboard</title>
+    <title>Global Accounting Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .chart-container { position: relative; height: 280px; }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@tensorflow/tfjs"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-50 text-slate-900">
-    <!-- Authentication Modal -->
-    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-globe text-white text-2xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-900">Welcome to Global Accountant</h2>
-                <p class="text-slate-600 mt-2">Sign in to access your business dashboard</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Global Accounting</h1>
+                <p class="text-gray-600">AI-Powered Professional Dashboard</p>
             </div>
-
-            <!-- Auth Toggle -->
-            <div class="flex bg-slate-100 rounded-lg p-1 mb-6">
-                <button id="loginTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm">
-                    Sign In
-                </button>
-                <button id="signupTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900">
-                    Sign Up
-                </button>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Your Country</label>
+                <select id="countrySelector" class="w-full border-2 border-gray-300 rounded-lg py-3 px-4 focus:border-blue-500 focus:outline-none">
+                    <option value="US">🇺🇸 United States (USD)</option>
+                    <option value="GB">🇬🇧 United Kingdom (GBP)</option>
+                    <option value="EU">🇪🇺 European Union (EUR)</option>
+                    <option value="ZA">🇿🇦 South Africa (ZAR)</option>
+                    <option value="AU">🇦🇺 Australia (AUD)</option>
+                    <option value="CA">🇨🇦 Canada (CAD)</option>
+                    <option value="IN">🇮🇳 India (INR)</option>
+                    <option value="SG">🇸🇬 Singapore (SGD)</option>
+                </select>
             </div>
-
-            <!-- Login Form -->
-            <div id="loginForm">
-                <form id="emailLoginForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                        <input type="email" id="loginEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                        <input type="password" id="loginPassword" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent">
-                    </div>
-                    <button type="submit" id="loginBtn" class="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors font-medium">
-                        Sign In
-                    </button>
-                </form>
-
-                <div class="my-6 flex items-center">
-                    <div class="flex-1 border-t border-slate-300"></div>
-                    <span class="px-4 text-sm text-slate-500">or</span>
-                    <div class="flex-1 border-t border-slate-300"></div>
-                </div>
-
-                <button id="googleLoginBtn" class="w-full flex items-center justify-center space-x-3 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    <span class="text-sm font-medium">Continue with Google</span>
-                </button>
-            </div>
-
-            <!-- Signup Form -->
-            <div id="signupForm" class="hidden">
-                <form id="emailSignupForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
-                        <input type="text" id="signupName" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                        <input type="email" id="signupEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                        <input type="password" id="signupPassword" required minlength="6" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent">
-                        <p class="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Business Name</label>
-                        <input type="text" id="signupBusiness" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent">
-                    </div>
-                    <button type="submit" id="signupBtn" class="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors font-medium">
-                        Create Account
-                    </button>
-                </form>
-
-                <div class="my-6 flex items-center">
-                    <div class="flex-1 border-t border-slate-300"></div>
-                    <span class="px-4 text-sm text-slate-500">or</span>
-                    <div class="flex-1 border-t border-slate-300"></div>
-                </div>
-
-                <button id="googleSignupBtn" class="w-full flex items-center justify-center space-x-3 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    <span class="text-sm font-medium">Sign up with Google</span>
-                </button>
-            </div>
-
-            <!-- Loading State -->
-            <div id="authLoading" class="hidden text-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 mx-auto mb-4"></div>
-                <p class="text-slate-600">Signing you in...</p>
-            </div>
-
-            <!-- Error Message -->
-            <div id="authError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600 text-sm"></p>
+            
+            <button id="googleSignIn" class="w-full bg-white border-2 border-gray-300 rounded-lg py-3 px-4 flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors duration-200 mb-4">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span class="text-gray-700 font-medium">Continue with Google</span>
+            </button>
+            
+            <div class="text-center text-sm text-gray-500">
+                Secure authentication powered by Google
             </div>
         </div>
     </div>
 
-    <div id="app" class="min-h-screen flex">
-        <!-- Sidebar -->
-        <div class="w-72 bg-white border-r border-slate-200 flex-shrink-0">
-            <div class="p-8">
-                <div class="flex items-center space-x-3 mb-12">
-                    <div class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xl font-bold text-slate-900">Global Accountant</div>
-                        <div class="text-sm text-slate-500">Business Suite</div>
-                    </div>
-                </div>
-                
-                <nav class="space-y-1">
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-900 bg-slate-100 rounded-lg font-medium border-l-4 border-slate-900">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-                        </svg>
-                        <span>Overview</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span>Invoices</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                        <span>Expenses</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <span>Reports</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span>VAT Summary</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                        <span>Ask AI</span>
-                    </a>
-                    
-                    <!-- Country Selector in Sidebar -->
-                    <div class="mt-8 pt-6 border-t border-slate-200">
-                        <div class="px-4 mb-3">
-                            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Region</p>
-                        </div>
-                        <div class="relative">
-                            <button id="sidebarCountryBtn" class="w-full flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all">
-                                <span id="sidebarSelectedFlag" class="text-lg">🇿🇦</span>
-                                <div class="flex-1 text-left">
-                                    <div id="sidebarSelectedCountry" class="text-sm font-medium">South Africa</div>
-                                    <div id="sidebarSelectedCurrency" class="text-xs text-slate-500">ZAR (R)</div>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            
-                            <div id="sidebarCountryDropdown" class="hidden absolute left-0 bottom-full mb-2 w-full bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 max-h-80 overflow-y-auto">
-                                <div class="px-3 py-2 text-xs font-medium text-slate-500 uppercase tracking-wide border-b border-slate-100">Select Country</div>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="ZA" data-flag="🇿🇦" data-name="South Africa" data-currency="ZAR" data-symbol="R" data-vat="15">
-                                    <span class="text-lg">🇿🇦</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">South Africa</div>
-                                        <div class="text-xs text-slate-500">VAT 15% • ZAR (R)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="US" data-flag="🇺🇸" data-name="United States" data-currency="USD" data-symbol="$" data-vat="0">
-                                    <span class="text-lg">🇺🇸</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">United States</div>
-                                        <div class="text-xs text-slate-500">Sales Tax varies • USD ($)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="GB" data-flag="🇬🇧" data-name="United Kingdom" data-currency="GBP" data-symbol="£" data-vat="20">
-                                    <span class="text-lg">🇬🇧</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">United Kingdom</div>
-                                        <div class="text-xs text-slate-500">VAT 20% • GBP (£)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="CA" data-flag="🇨🇦" data-name="Canada" data-currency="CAD" data-symbol="C$" data-vat="13">
-                                    <span class="text-lg">🇨🇦</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">Canada</div>
-                                        <div class="text-xs text-slate-500">HST 13% • CAD (C$)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="AU" data-flag="🇦🇺" data-name="Australia" data-currency="AUD" data-symbol="A$" data-vat="10">
-                                    <span class="text-lg">🇦🇺</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">Australia</div>
-                                        <div class="text-xs text-slate-500">GST 10% • AUD (A$)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="DE" data-flag="🇩🇪" data-name="Germany" data-currency="EUR" data-symbol="€" data-vat="19">
-                                    <span class="text-lg">🇩🇪</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">Germany</div>
-                                        <div class="text-xs text-slate-500">VAT 19% • EUR (€)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="FR" data-flag="🇫🇷" data-name="France" data-currency="EUR" data-symbol="€" data-vat="20">
-                                    <span class="text-lg">🇫🇷</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">France</div>
-                                        <div class="text-xs text-slate-500">VAT 20% • EUR (€)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="IN" data-flag="🇮🇳" data-name="India" data-currency="INR" data-symbol="₹" data-vat="18">
-                                    <span class="text-lg">🇮🇳</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">India</div>
-                                        <div class="text-xs text-slate-500">GST 18% • INR (₹)</div>
-                                    </div>
-                                </button>
-                                <button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="SG" data-flag="🇸🇬" data-name="Singapore" data-currency="SGD" data-symbol="S$" data-vat="8">
-                                    <span class="text-lg">🇸🇬</span>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-slate-900">Singapore</div>
-                                        <div class="text-xs text-slate-500">GST 8% • SGD (S$)</div>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
-            <!-- Top Bar -->
-            <header class="bg-white border-b border-slate-200 px-8 py-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 id="businessName" class="text-2xl font-bold text-slate-900">Your Business</h1>
-                        <div class="flex items-center space-x-4">
-                            <p class="text-slate-500 text-sm">Registration: 2019/123456/07</p>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                                <span class="text-sm font-medium text-emerald-700">Active</span>
-                            </div>
-                        </div>
-                    </div>
-                    
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
                     <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <button id="profileBtn" class="flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors">
-                                <div class="text-right">
-                                    <div id="userDisplayName" class="text-sm font-medium text-slate-900">Loading...</div>
-                                    <div class="text-xs text-slate-500">Administrator</div>
-                                </div>
-                                <div id="userAvatar" class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center">
-                                    <span class="text-white font-medium text-sm">?</span>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            
-                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
-                                <div class="px-4 py-2 border-b border-slate-100">
-                                    <div id="dropdownUserName" class="text-sm font-medium text-slate-900">Loading...</div>
-                                    <div id="dropdownUserEmail" class="text-xs text-slate-500">Loading...</div>
-                                    <div id="authProvider" class="text-xs text-emerald-600 mt-1 hidden">
-                                        <svg class="w-3 h-3 inline mr-1" viewBox="0 0 24 24">
-                                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                                        </svg>
-                                        Signed in with Google
-                                    </div>
-                                </div>
-                                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Account Settings</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Business Profile</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Billing & Subscription</a>
-                                <hr class="my-2">
-                                <a href="#" id="signOutBtn" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign Out</a>
-                            </div>
+                        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-globe text-white"></i>
                         </div>
+                        <h1 class="text-2xl font-bold text-gray-900">Global Accounting</h1>
                     </div>
-                </div>
-            </header>
-
-            <!-- Dashboard Content -->
-            <main class="flex-1 p-8 bg-slate-50">
-                <!-- Key Metrics Row -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-lg p-6 border border-slate-200" data-metric="revenue">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-slate-600">Monthly Revenue</p>
-                                <p class="text-2xl font-bold text-slate-900">R 94,250</p>
-                                <p class="text-sm text-emerald-600">+12.5% from last month</p>
-                            </div>
-                            <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                </svg>
-                            </div>
+                    <div class="flex items-center space-x-4">
+                        <div id="userInfo" class="flex items-center space-x-3">
+                            <img id="userAvatar" class="w-8 h-8 rounded-full" src="" alt="User">
+                            <span id="userName" class="text-gray-700 font-medium"></span>
                         </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg p-6 border border-slate-200" data-metric="outstanding">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-slate-600">Outstanding Invoices</p>
-                                <p class="text-2xl font-bold text-slate-900">R 18,750</p>
-                                <p class="text-sm text-amber-600">7 invoices pending</p>
-                            </div>
-                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg p-6 border border-slate-200" data-metric="expenses">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-slate-600">Monthly Expenses</p>
-                                <p class="text-2xl font-bold text-slate-900">R 31,200</p>
-                                <p class="text-sm text-slate-500">-5.2% from last month</p>
-                            </div>
-                            <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tax Status Card -->
-                    <div id="taxCard" class="bg-red-600 rounded-lg p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="taxLabel" class="text-sm font-medium text-red-100">VAT Payment Due</p>
-                                <p id="taxAmount" class="text-2xl font-bold">R 1,245</p>
-                                <p class="text-sm text-red-100">Due: 25 January 2024</p>
-                            </div>
-                            <div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <button class="mt-4 w-full bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg py-2 text-sm font-medium transition-colors">
-                            Make Payment
+                        <button id="signOut" class="text-gray-500 hover:text-gray-700 transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
                 </div>
+            </div>
+        </header>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                    <!-- Cash Flow Chart -->
-                    <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200">
-                        <div class="p-6 border-b border-slate-200">
-                            <h3 class="text-lg font-semibold text-slate-900">Cash Flow Analysis</h3>
-                            <p class="text-sm text-slate-500">Monthly income vs expenses comparison</p>
-                        </div>
-                        <div class="p-6">
-                            <div class="chart-container">
-                                <canvas id="cashFlowChart"></canvas>
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex space-x-8">
+                    <button class="nav-tab active border-b-2 border-blue-500 py-4 px-1 text-blue-600 font-medium" data-tab="overview">
+                        <i class="fas fa-chart-line mr-2"></i>Overview
+                    </button>
+                    <button class="nav-tab border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium" data-tab="transactions">
+                        <i class="fas fa-exchange-alt mr-2"></i>Transactions
+                    </button>
+                    <button class="nav-tab border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium" data-tab="clients">
+                        <i class="fas fa-users mr-2"></i>Clients
+                    </button>
+                    <button class="nav-tab border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium" data-tab="ai-upload">
+                        <i class="fas fa-robot mr-2"></i>AI Upload
+                    </button>
+                    <button class="nav-tab border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium" data-tab="tax-calendar">
+                        <i class="fas fa-calendar-alt mr-2"></i>Tax Calendar
+                    </button>
+                    <button class="nav-tab border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium" data-tab="reports">
+                        <i class="fas fa-file-alt mr-2"></i>Reports
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                                <p class="text-3xl font-bold text-gray-900" id="totalRevenue">$245,680</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>12.5% from last month
+                                </p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Income vs Expenses -->
-                    <div class="bg-white rounded-lg border border-slate-200">
-                        <div class="p-6 border-b border-slate-200">
-                            <h3 class="text-lg font-semibold text-slate-900">Financial Overview</h3>
-                            <p class="text-sm text-slate-500">Current period breakdown</p>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Active Clients</p>
+                                <p class="text-3xl font-bold text-gray-900">47</p>
+                                <p class="text-sm text-blue-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>3 new this month
+                                </p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
                         </div>
-                        <div class="p-6">
-                            <div class="chart-container">
-                                <canvas id="pieChart"></canvas>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Pending Invoices</p>
+                                <p class="text-3xl font-bold text-gray-900">12</p>
+                                <p class="text-sm text-orange-600 mt-1">
+                                    <i class="fas fa-clock mr-1"></i>R 45,230 outstanding
+                                </p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <i class="fas fa-file-invoice text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Monthly Expenses</p>
+                                <p class="text-3xl font-bold text-gray-900">R 89,450</p>
+                                <p class="text-sm text-red-600 mt-1">
+                                    <i class="fas fa-arrow-down mr-1"></i>5.2% from last month
+                                </p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-full">
+                                <i class="fas fa-credit-card text-red-600 text-xl"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
+                        <canvas id="revenueChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Expense Categories</h3>
+                        <canvas id="expenseChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="fas fa-plus text-green-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Payment received from ABC Corp</p>
+                                    <p class="text-sm text-gray-500">Invoice #INV-2024-001 • R 15,500</p>
+                                </div>
+                                <span class="text-sm text-gray-500">2 hours ago</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-blue-100 p-2 rounded-full">
+                                    <i class="fas fa-file-alt text-blue-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New invoice created</p>
+                                    <p class="text-sm text-gray-500">XYZ Ltd • Invoice #INV-2024-002 • R 8,750</p>
+                                </div>
+                                <span class="text-sm text-gray-500">5 hours ago</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-orange-100 p-2 rounded-full">
+                                    <i class="fas fa-exclamation-triangle text-orange-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Invoice overdue</p>
+                                    <p class="text-sm text-gray-500">DEF Company • Invoice #INV-2024-003 • R 12,300</p>
+                                </div>
+                                <span class="text-sm text-gray-500">1 day ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="transactions" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+                        <button id="addTransactionBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Add Transaction
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-15</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Monthly Bookkeeping</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ABC Corp</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">+R 15,500</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-14</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Tax Consultation</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">XYZ Ltd</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">+R 8,750</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-13</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Office Supplies</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">-R 1,250</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Expense</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients Tab -->
+            <div id="clients" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Client Management</h3>
+                        <button id="addClientBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Add Client
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-building text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">ABC Corporation</h4>
+                                        <p class="text-sm text-gray-500">Manufacturing</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2"></i>contact@abc-corp.co.za</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2"></i>+27 11 123 4567</p>
+                                    <p class="text-green-600 font-medium"><i class="fas fa-dollar-sign mr-2"></i>R 45,500 YTD</p>
+                                </div>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="bg-green-100 w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-store text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">XYZ Retail Ltd</h4>
+                                        <p class="text-sm text-gray-500">Retail</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2"></i>info@xyz-retail.co.za</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2"></i>+27 21 987 6543</p>
+                                    <p class="text-green-600 font-medium"><i class="fas fa-dollar-sign mr-2"></i>R 32,750 YTD</p>
+                                </div>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-laptop text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Tech Solutions</h4>
+                                        <p class="text-sm text-gray-500">Technology</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2"></i>hello@techsolutions.co.za</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2"></i>+27 31 555 0123</p>
+                                    <p class="text-green-600 font-medium"><i class="fas fa-dollar-sign mr-2"></i>R 28,900 YTD</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Upload Tab -->
+            <div id="ai-upload" class="tab-content hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Compliance Deadlines -->
-                    <div class="bg-white rounded-lg border border-slate-200">
-                        <div class="p-6 border-b border-slate-200">
-                            <h3 class="text-lg font-semibold text-slate-900">Compliance Calendar</h3>
-                            <p class="text-sm text-slate-500">Upcoming SARS & CIPC deadlines</p>
+                    <!-- Upload Section -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-robot text-blue-600 mr-2"></i>AI Bank Statement Processor
+                        </h3>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-lg font-medium text-gray-700 mb-2">Upload Your Bank Statement</p>
+                            <p class="text-sm text-gray-500 mb-4">Supports CSV, PDF, and Excel files</p>
+                            <input type="file" id="bankStatementUpload" accept=".csv,.pdf,.xlsx,.xls" class="hidden">
+                            <button onclick="document.getElementById('bankStatementUpload').click()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-upload mr-2"></i>Choose File
+                            </button>
                         </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
-                                <div class="flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <div class="font-medium text-slate-900">VAT Return Submission</div>
-                                        <div class="text-sm text-slate-600">SARS eFiling Portal</div>
-                                        <div class="text-sm text-red-600 font-medium">Due: 25 January 2024</div>
+                        
+                        <!-- Processing Status -->
+                        <div id="processingStatus" class="hidden mt-6">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-center">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                                    <div>
+                                        <p class="font-medium text-blue-800">AI Processing Your Statement...</p>
+                                        <p class="text-sm text-blue-600">Categorizing transactions and identifying clients</p>
                                     </div>
-                                    <span class="text-red-600 font-bold text-sm">3 days</span>
-                                </div>
-                                
-                                <div class="flex items-center space-x-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                    <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <div class="font-medium text-slate-900">UIF Monthly Declaration</div>
-                                        <div class="text-sm text-slate-600">Department of Labour</div>
-                                        <div class="text-sm text-amber-600 font-medium">Due: 7 February 2024</div>
-                                    </div>
-                                    <span class="text-amber-600 font-bold text-sm">16 days</span>
-                                </div>
-                                
-                                <div class="flex items-center space-x-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <div class="font-medium text-slate-900">Annual Return Filing</div>
-                                        <div class="text-sm text-slate-600">CIPC Online Portal</div>
-                                        <div class="text-sm text-blue-600 font-medium">Due: 15 February 2024</div>
-                                    </div>
-                                    <span class="text-blue-600 font-bold text-sm">24 days</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Quick Actions -->
-                    <div class="bg-white rounded-lg border border-slate-200">
-                        <div class="p-6 border-b border-slate-200">
-                            <h3 class="text-lg font-semibold text-slate-900">Quick Actions</h3>
-                            <p class="text-sm text-slate-500">Common business tasks</p>
-                        </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 gap-4">
-                                <button class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="font-medium text-slate-900">Create Invoice</div>
-                                            <div class="text-sm text-slate-500">Generate new customer invoice</div>
-                                        </div>
-                                    </div>
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                                
-                                <button class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="font-medium text-slate-900">Record Expense</div>
-                                            <div class="text-sm text-slate-500">Log business expenditure</div>
-                                        </div>
-                                    </div>
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                                
-                                <button id="uploadBankStatement" class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="font-medium text-slate-900">Upload Bank Statement</div>
-                                            <div class="text-sm text-slate-500">AI will auto-capture transactions</div>
-                                        </div>
-                                    </div>
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                                
-                                <button class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="font-medium text-slate-900">Generate Report</div>
-                                            <div class="text-sm text-slate-500">Financial statements & analytics</div>
-                                        </div>
-                                    </div>
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
+                    
+                    <!-- AI Insights -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-brain text-purple-600 mr-2"></i>AI Insights
+                        </h3>
+                        <div id="aiInsights" class="space-y-4">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600">Upload a bank statement to see AI-powered insights about your transactions, spending patterns, and automatic categorization.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+                
+                <!-- Processed Transactions Preview -->
+                <div id="processedTransactions" class="hidden mt-8 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">AI Processed Transactions</h3>
+                        <p class="text-sm text-gray-600">Review and approve the AI categorization before importing</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confidence</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processedTransactionsBody" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                        <button id="rejectAll" class="px-4 py-2 text-gray-600 hover:text-gray-800">Reject All</button>
+                        <button id="approveAll" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Approve & Import All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Calendar Tab -->
+            <div id="tax-calendar" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Calendar View -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                <i class="fas fa-calendar-alt text-green-600 mr-2"></i>Tax Compliance Calendar
+                            </h3>
+                            <div class="flex items-center space-x-2">
+                                <button id="prevMonth" class="p-2 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-chevron-left text-gray-600"></i>
+                                </button>
+                                <span id="currentMonth" class="font-medium text-gray-900 px-4">January 2024</span>
+                                <button id="nextMonth" class="p-2 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-chevron-right text-gray-600"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Calendar Grid -->
+                        <div class="grid grid-cols-7 gap-1 mb-4">
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Sun</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Mon</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Tue</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Wed</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Thu</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Fri</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-500">Sat</div>
+                        </div>
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                            <!-- Calendar days will be generated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Deadlines -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-exclamation-triangle text-orange-600 mr-2"></i>Upcoming Deadlines
+                        </h3>
+                        <div id="upcomingDeadlines" class="space-y-4">
+                            <!-- Deadlines will be populated based on selected country -->
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-gray-200">
+                            <button id="addCustomDeadline" class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-plus text-blue-600 mr-2"></i>
+                                <span class="text-gray-700">Add Custom Deadline</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tax Reminders -->
+                <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-bell text-yellow-600 mr-2"></i>Smart Tax Reminders
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-medium text-gray-900">Quarterly VAT Return</h4>
+                                <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Due Soon</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Due: March 31, 2024</p>
+                            <button class="text-sm text-blue-600 hover:text-blue-800">Set Reminder</button>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-medium text-gray-900">Annual Tax Return</h4>
+                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Upcoming</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Due: July 31, 2024</p>
+                            <button class="text-sm text-blue-600 hover:text-blue-800">Set Reminder</button>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-medium text-gray-900">Payroll Tax</h4>
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">On Track</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Due: February 15, 2024</p>
+                            <button class="text-sm text-blue-600 hover:text-blue-800">Set Reminder</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Generate Reports</h3>
+                        <div class="space-y-4">
+                            <button id="monthlyReportBtn" class="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-chart-bar text-blue-600"></i>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">Monthly Financial Report</h4>
+                                        <p class="text-sm text-gray-500">Comprehensive overview of monthly finances</p>
+                                    </div>
+                                </div>
+                            </button>
+                            <button id="taxSummaryBtn" class="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-file-invoice text-green-600"></i>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">Tax Summary</h4>
+                                        <p class="text-sm text-gray-500">Annual tax preparation summary</p>
+                                    </div>
+                                </div>
+                            </button>
+                            <button id="clientRevenueBtn" class="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-users text-purple-600"></i>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">Client Revenue Report</h4>
+                                        <p class="text-sm text-gray-500">Revenue breakdown by client</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">This Month Revenue</span>
+                                <span class="font-semibold text-gray-900">R 67,450</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">Outstanding Invoices</span>
+                                <span class="font-semibold text-orange-600">R 45,230</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">Total Expenses</span>
+                                <span class="font-semibold text-red-600">R 23,180</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">Net Profit</span>
+                                <span class="font-semibold text-green-600">R 44,270</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://ehpjupxbworwiepbuxkn.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Supabase configuration
+        const SUPABASE_URL = 'https://ehpjupxbworwiepbuxkn.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0'
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-        // Global state
-        let currentUser = null;
-        let userProfile = null;
-        
-        // Current country configuration
-        let currentCountry = {
-            code: 'ZA',
-            name: 'South Africa',
-            flag: '🇿🇦',
-            currency: 'ZAR',
-            symbol: 'R',
-            vatRate: 15,
-            taxName: 'VAT'
-        };
-        
         // Country configurations
         const countryConfigs = {
-            'ZA': { name: 'South Africa', flag: '🇿🇦', currency: 'ZAR', symbol: 'R', vatRate: 15, taxName: 'VAT' },
-            'US': { name: 'United States', flag: '🇺🇸', currency: 'USD', symbol: '$', vatRate: 0, taxName: 'Sales Tax' },
-            'GB': { name: 'United Kingdom', flag: '🇬🇧', currency: 'GBP', symbol: '£', vatRate: 20, taxName: 'VAT' },
-            'CA': { name: 'Canada', flag: '🇨🇦', currency: 'CAD', symbol: 'C$', vatRate: 13, taxName: 'HST' },
-            'AU': { name: 'Australia', flag: '🇦🇺', currency: 'AUD', symbol: 'A$', vatRate: 10, taxName: 'GST' },
-            'DE': { name: 'Germany', flag: '🇩🇪', currency: 'EUR', symbol: '€', vatRate: 19, taxName: 'VAT' },
-            'FR': { name: 'France', flag: '🇫🇷', currency: 'EUR', symbol: '€', vatRate: 20, taxName: 'VAT' },
-            'IN': { name: 'India', flag: '🇮🇳', currency: 'INR', symbol: '₹', vatRate: 18, taxName: 'GST' },
-            'SG': { name: 'Singapore', flag: '🇸🇬', currency: 'SGD', symbol: 'S$', vatRate: 8, taxName: 'GST' }
-        };
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Check if user is already logged in
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                currentUser = session.user;
-                await loadUserProfile();
-                showDashboard();
-            } else {
-                showAuthModal();
-            }
-
-            // Listen for auth changes
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN') {
-                    currentUser = session.user;
-                    await loadUserProfile();
-                    showDashboard();
-                    hideAuthModal();
-                    showNotification('Successfully signed in!', 'success');
-                } else if (event === 'SIGNED_OUT') {
-                    currentUser = null;
-                    userProfile = null;
-                    showAuthModal();
-                    showNotification('Signed out successfully', 'info');
-                }
-            });
-
-            setupEventListeners();
-            initializeCharts();
-        });
-
-        // Load user profile from database
-        async function loadUserProfile() {
-            if (!currentUser) return;
-
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (error && error.code !== 'PGRST116') {
-                    console.error('Error loading profile:', error);
-                    return;
-                }
-
-                userProfile = data;
-                
-                // If no profile exists, create one
-                if (!data) {
-                    await createUserProfile();
-                }
-                
-                updateUserDisplay();
-            } catch (error) {
-                console.error('Error loading user profile:', error);
-            }
-        }
-
-        // Create user profile in database
-        async function createUserProfile() {
-            if (!currentUser) return;
-
-            const profileData = {
-                id: currentUser.id,
-                email: currentUser.email,
-                full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
-                business_name: 'Your Business',
-                country_code: 'ZA',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .insert([profileData])
-                    .select()
-                    .single();
-
-                if (error) {
-                    console.error('Error creating profile:', error);
-                    return;
-                }
-
-                userProfile = data;
-                updateUserDisplay();
-            } catch (error) {
-                console.error('Error creating user profile:', error);
+            US: {
+                currency: 'USD',
+                symbol: '$',
+                taxRate: 0.21,
+                dateFormat: 'MM/DD/YYYY',
+                taxDeadlines: [
+                    { name: 'Quarterly Tax Return', date: '2024-03-15', type: 'quarterly' },
+                    { name: 'Annual Tax Return', date: '2024-04-15', type: 'annual' },
+                    { name: 'Payroll Tax', date: '2024-01-31', type: 'monthly' }
+                ]
+            },
+            GB: {
+                currency: 'GBP',
+                symbol: '£',
+                taxRate: 0.19,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'VAT Return', date: '2024-02-07', type: 'quarterly' },
+                    { name: 'Corporation Tax', date: '2024-12-31', type: 'annual' },
+                    { name: 'PAYE', date: '2024-01-19', type: 'monthly' }
+                ]
+            },
+            EU: {
+                currency: 'EUR',
+                symbol: '€',
+                taxRate: 0.25,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'VAT Declaration', date: '2024-01-20', type: 'monthly' },
+                    { name: 'Corporate Tax', date: '2024-03-31', type: 'annual' },
+                    { name: 'Social Security', date: '2024-01-15', type: 'monthly' }
+                ]
+            },
+            ZA: {
+                currency: 'ZAR',
+                symbol: 'R',
+                taxRate: 0.28,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'VAT Return', date: '2024-01-25', type: 'monthly' },
+                    { name: 'Company Tax', date: '2024-07-31', type: 'annual' },
+                    { name: 'PAYE', date: '2024-01-07', type: 'monthly' }
+                ]
+            },
+            AU: {
+                currency: 'AUD',
+                symbol: 'A$',
+                taxRate: 0.30,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'BAS Statement', date: '2024-01-28', type: 'quarterly' },
+                    { name: 'Company Tax Return', date: '2024-05-15', type: 'annual' },
+                    { name: 'Payroll Tax', date: '2024-01-21', type: 'monthly' }
+                ]
+            },
+            CA: {
+                currency: 'CAD',
+                symbol: 'C$',
+                taxRate: 0.26,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'GST/HST Return', date: '2024-01-31', type: 'quarterly' },
+                    { name: 'Corporate Tax', date: '2024-06-15', type: 'annual' },
+                    { name: 'Payroll Deductions', date: '2024-01-15', type: 'monthly' }
+                ]
+            },
+            IN: {
+                currency: 'INR',
+                symbol: '₹',
+                taxRate: 0.30,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'GST Return', date: '2024-01-20', type: 'monthly' },
+                    { name: 'Income Tax Return', date: '2024-07-31', type: 'annual' },
+                    { name: 'TDS Return', date: '2024-01-31', type: 'quarterly' }
+                ]
+            },
+            SG: {
+                currency: 'SGD',
+                symbol: 'S$',
+                taxRate: 0.17,
+                dateFormat: 'DD/MM/YYYY',
+                taxDeadlines: [
+                    { name: 'GST Return', date: '2024-01-30', type: 'quarterly' },
+                    { name: 'Corporate Tax', date: '2024-11-30', type: 'annual' },
+                    { name: 'CPF Contributions', date: '2024-01-14', type: 'monthly' }
+                ]
             }
         }
 
-        // Update user display in UI
-        function updateUserDisplay() {
-            if (!currentUser) return;
+        let selectedCountry = 'US'
+        let currentConfig = countryConfigs[selectedCountry]
 
-            const displayName = userProfile?.full_name || currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
-            const businessName = userProfile?.business_name || 'Your Business';
-            const email = currentUser.email;
-            
-            // Update profile display
-            document.getElementById('userDisplayName').textContent = displayName;
-            document.getElementById('dropdownUserName').textContent = displayName;
-            document.getElementById('dropdownUserEmail').textContent = email;
-            document.getElementById('businessName').textContent = businessName;
-            
-            // Update avatar
-            const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-            document.getElementById('userAvatar').innerHTML = `<span class="text-white font-medium text-sm">${initials}</span>`;
-            
-            // Show auth provider if Google
-            if (currentUser.app_metadata?.provider === 'google') {
-                document.getElementById('authProvider').classList.remove('hidden');
+        // DOM elements
+        const loginScreen = document.getElementById('loginScreen')
+        const dashboard = document.getElementById('dashboard')
+        const googleSignInBtn = document.getElementById('googleSignIn')
+        const signOutBtn = document.getElementById('signOut')
+        const userAvatar = document.getElementById('userAvatar')
+        const userName = document.getElementById('userName')
+
+        // AI Transaction Processing
+        class AITransactionProcessor {
+            constructor() {
+                this.categories = [
+                    'Office Supplies', 'Marketing', 'Travel', 'Software', 'Consulting',
+                    'Utilities', 'Rent', 'Insurance', 'Professional Services', 'Equipment',
+                    'Client Payment', 'Refund', 'Bank Fee', 'Interest', 'Other'
+                ]
             }
 
-            // Load user's country preference
-            if (userProfile?.country_code && countryConfigs[userProfile.country_code]) {
-                currentCountry = {
-                    code: userProfile.country_code,
-                    ...countryConfigs[userProfile.country_code]
-                };
-                updateCountryDisplay();
-                updateFinancialData();
-            }
-        }
-
-        // Show/hide modals
-        function showAuthModal() {
-            document.getElementById('authModal').classList.remove('hidden');
-            document.getElementById('app').style.display = 'none';
-        }
-
-        function hideAuthModal() {
-            document.getElementById('authModal').classList.add('hidden');
-            document.getElementById('app').style.display = 'flex';
-        }
-
-        function showDashboard() {
-            document.getElementById('app').style.display = 'flex';
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Auth modal tab switching
-            document.getElementById('loginTab').addEventListener('click', function() {
-                this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-                this.classList.remove('text-slate-600');
-                document.getElementById('signupTab').classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
-                document.getElementById('signupTab').classList.add('text-slate-600');
-                document.getElementById('loginForm').classList.remove('hidden');
-                document.getElementById('signupForm').classList.add('hidden');
-            });
-
-            document.getElementById('signupTab').addEventListener('click', function() {
-                this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-                this.classList.remove('text-slate-600');
-                document.getElementById('loginTab').classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
-                document.getElementById('loginTab').classList.add('text-slate-600');
-                document.getElementById('signupForm').classList.remove('hidden');
-                document.getElementById('loginForm').classList.add('hidden');
-            });
-
-            // Email login form
-            document.getElementById('emailLoginForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                
-                showAuthLoading();
-                
-                try {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-
-                    if (error) {
-                        showAuthError(error.message);
-                        hideAuthLoading();
+            async processFile(file) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                        const content = e.target.result
+                        const transactions = this.parseTransactions(content, file.type)
+                        const processedTransactions = transactions.map(t => this.categorizeTransaction(t))
+                        resolve(processedTransactions)
                     }
-                } catch (error) {
-                    showAuthError('An unexpected error occurred');
-                    hideAuthLoading();
-                }
-            });
+                    reader.readAsText(file)
+                })
+            }
 
-            // Email signup form
-            document.getElementById('emailSignupForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const name = document.getElementById('signupName').value;
-                const email = document.getElementById('signupEmail').value;
-                const password = document.getElementById('signupPassword').value;
-                const businessName = document.getElementById('signupBusiness').value;
+            parseTransactions(content, fileType) {
+                const lines = content.split('\n').filter(line => line.trim())
+                const transactions = []
                 
-                showAuthLoading();
-                
-                try {
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            data: {
-                                full_name: name,
-                                business_name: businessName
-                            }
-                        }
-                    });
-
-                    if (error) {
-                        showAuthError(error.message);
-                        hideAuthLoading();
-                    } else {
-                        showNotification('Account created! Please check your email to verify your account.', 'success');
-                        hideAuthLoading();
+                // Skip header row
+                for (let i = 1; i < lines.length; i++) {
+                    const columns = lines[i].split(',')
+                    if (columns.length >= 3) {
+                        transactions.push({
+                            date: columns[0]?.trim() || new Date().toISOString().split('T')[0],
+                            description: columns[1]?.trim() || 'Unknown Transaction',
+                            amount: parseFloat(columns[2]?.replace(/[^\d.-]/g, '')) || 0,
+                            reference: columns[3]?.trim() || ''
+                        })
                     }
-                } catch (error) {
-                    showAuthError('An unexpected error occurred');
-                    hideAuthLoading();
-                }
-            });
-
-            // Google login buttons
-            document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
-            document.getElementById('googleSignupBtn').addEventListener('click', signInWithGoogle);
-
-            // Sign out
-            document.getElementById('signOutBtn').addEventListener('click', async function(e) {
-                e.preventDefault();
-                await supabase.auth.signOut();
-            });
-
-            // Profile dropdown
-            document.getElementById('profileBtn').addEventListener('click', function() {
-                document.getElementById('profileDropdown').classList.toggle('hidden');
-            });
-
-            // Country selector
-            document.getElementById('sidebarCountryBtn').addEventListener('click', function() {
-                document.getElementById('sidebarCountryDropdown').classList.toggle('hidden');
-            });
-
-            // Country selection
-            document.querySelectorAll('.sidebar-country-option').forEach(option => {
-                option.addEventListener('click', async function() {
-                    const countryCode = this.dataset.country;
-                    const config = countryConfigs[countryCode];
-                    
-                    currentCountry = {
-                        code: countryCode,
-                        name: config.name,
-                        flag: config.flag,
-                        currency: config.currency,
-                        symbol: config.symbol,
-                        vatRate: config.vatRate,
-                        taxName: config.taxName
-                    };
-                    
-                    // Save to user profile
-                    if (currentUser && userProfile) {
-                        await updateUserCountryPreference(countryCode);
-                    }
-                    
-                    updateCountryDisplay();
-                    updateFinancialData();
-                    document.getElementById('sidebarCountryDropdown').classList.add('hidden');
-                    showNotification(`Switched to ${config.name}. All values updated to ${config.currency}.`, 'success');
-                });
-            });
-
-            // Click outside to close dropdowns
-            document.addEventListener('click', function(event) {
-                const profileBtn = document.getElementById('profileBtn');
-                const profileDropdown = document.getElementById('profileDropdown');
-                const sidebarCountryBtn = document.getElementById('sidebarCountryBtn');
-                const sidebarCountryDropdown = document.getElementById('sidebarCountryDropdown');
-                
-                if (!profileBtn.contains(event.target)) {
-                    profileDropdown.classList.add('hidden');
                 }
                 
-                if (!sidebarCountryBtn.contains(event.target)) {
-                    sidebarCountryDropdown.classList.add('hidden');
-                }
-            });
+                return transactions
+            }
 
-            // File upload
-            document.getElementById('uploadBankStatement').addEventListener('click', handleFileUpload);
+            categorizeTransaction(transaction) {
+                const desc = transaction.description.toLowerCase()
+                let category = 'Other'
+                let confidence = 0.5
+                let client = null
+
+                // AI-like categorization logic
+                if (desc.includes('office') || desc.includes('supplies') || desc.includes('stationery')) {
+                    category = 'Office Supplies'
+                    confidence = 0.9
+                } else if (desc.includes('marketing') || desc.includes('advertising') || desc.includes('social media')) {
+                    category = 'Marketing'
+                    confidence = 0.85
+                } else if (desc.includes('travel') || desc.includes('flight') || desc.includes('hotel')) {
+                    category = 'Travel'
+                    confidence = 0.9
+                } else if (desc.includes('software') || desc.includes('subscription') || desc.includes('saas')) {
+                    category = 'Software'
+                    confidence = 0.85
+                } else if (desc.includes('consulting') || desc.includes('professional') || desc.includes('legal')) {
+                    category = 'Professional Services'
+                    confidence = 0.8
+                } else if (desc.includes('rent') || desc.includes('lease')) {
+                    category = 'Rent'
+                    confidence = 0.95
+                } else if (desc.includes('insurance')) {
+                    category = 'Insurance'
+                    confidence = 0.9
+                } else if (desc.includes('payment') || desc.includes('invoice') || transaction.amount > 0) {
+                    category = 'Client Payment'
+                    confidence = 0.7
+                    // Try to extract client name
+                    const words = desc.split(' ')
+                    client = words.find(word => word.length > 3 && !['payment', 'invoice', 'from', 'received'].includes(word))
+                }
+
+                return {
+                    ...transaction,
+                    category,
+                    confidence,
+                    client: client || 'General',
+                    status: transaction.amount > 0 ? 'Paid' : 'Expense'
+                }
+            }
         }
 
-        // Google authentication
+        const aiProcessor = new AITransactionProcessor()
+
+        // Authentication functions
         async function signInWithGoogle() {
-            showAuthLoading();
-            
             try {
+                selectedCountry = document.getElementById('countrySelector').value
+                currentConfig = countryConfigs[selectedCountry]
+                localStorage.setItem('selectedCountry', selectedCountry)
+                
                 const { data, error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin
+                        redirectTo: window.location.origin + '/auth/callback'
                     }
-                });
-
-                if (error) {
-                    showAuthError(error.message);
-                    hideAuthLoading();
-                }
+                })
+                if (error) throw error
             } catch (error) {
-                showAuthError('An unexpected error occurred');
-                hideAuthLoading();
+                console.error('Error signing in:', error.message)
+                alert('Error signing in: ' + error.message)
             }
         }
 
-        // Update user country preference
-        async function updateUserCountryPreference(countryCode) {
-            if (!currentUser || !userProfile) return;
-
+        async function signOut() {
             try {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ 
-                        country_code: countryCode,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', currentUser.id);
-
-                if (error) {
-                    console.error('Error updating country preference:', error);
-                } else {
-                    userProfile.country_code = countryCode;
-                }
+                const { error } = await supabase.auth.signOut()
+                if (error) throw error
+                showLoginScreen()
             } catch (error) {
-                console.error('Error updating country preference:', error);
+                console.error('Error signing out:', error.message)
             }
         }
 
-        // Auth UI helpers
-        function showAuthLoading() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('signupForm').classList.add('hidden');
-            document.getElementById('authLoading').classList.remove('hidden');
-            document.getElementById('authError').classList.add('hidden');
+        function showLoginScreen() {
+            loginScreen.classList.remove('hidden')
+            dashboard.classList.add('hidden')
         }
 
-        function hideAuthLoading() {
-            document.getElementById('authLoading').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-        }
-
-        function showAuthError(message) {
-            const errorDiv = document.getElementById('authError');
-            errorDiv.querySelector('p').textContent = message;
-            errorDiv.classList.remove('hidden');
-        }
-
-        // Update country display
-        function updateCountryDisplay() {
-            document.getElementById('sidebarSelectedFlag').textContent = currentCountry.flag;
-            document.getElementById('sidebarSelectedCountry').textContent = currentCountry.name;
-            document.getElementById('sidebarSelectedCurrency').textContent = `${currentCountry.currency} (${currentCountry.symbol})`;
-        }
-        
-        // Update financial data with new currency
-        function updateFinancialData() {
-            const symbol = currentCountry.symbol;
+        function showDashboard(user) {
+            loginScreen.classList.add('hidden')
+            dashboard.classList.remove('hidden')
             
-            // Sample conversion rates (in a real app, you'd fetch live rates)
-            const conversionRates = {
-                'ZAR': 1,
-                'USD': 0.054,
-                'GBP': 0.043,
-                'EUR': 0.049,
-                'CAD': 0.073,
-                'AUD': 0.081,
-                'INR': 4.5,
-                'SGD': 0.073
-            };
-            
-            const rate = conversionRates[currentCountry.currency] || 1;
-            
-            // Update revenue
-            const revenue = Math.round(94250 * rate);
-            document.querySelector('[data-metric="revenue"] .text-2xl').textContent = `${symbol} ${revenue.toLocaleString()}`;
-            
-            // Update outstanding invoices
-            const outstanding = Math.round(18750 * rate);
-            document.querySelector('[data-metric="outstanding"] .text-2xl').textContent = `${symbol} ${outstanding.toLocaleString()}`;
-            
-            // Update expenses
-            const expenses = Math.round(31200 * rate);
-            document.querySelector('[data-metric="expenses"] .text-2xl').textContent = `${symbol} ${expenses.toLocaleString()}`;
-            
-            // Update tax amount and label
-            const taxAmount = Math.round(1245 * rate);
-            document.getElementById('taxAmount').textContent = `${symbol} ${taxAmount.toLocaleString()}`;
-            document.getElementById('taxLabel').textContent = `${currentCountry.taxName} Payment Due`;
-            
-            // Update chart data
-            if (window.cashFlowChart && window.pieChart) {
-                updateChartData(rate);
+            // Update user info
+            if (user.user_metadata) {
+                userName.textContent = user.user_metadata.full_name || user.email
+                userAvatar.src = user.user_metadata.avatar_url || 'https://via.placeholder.com/32'
             }
         }
-        
-        // Update chart data with new currency
-        function updateChartData(rate) {
-            // Update cash flow chart
-            const incomeData = [85000, 92000, 78000, 94000, 88000, 96000, 94250].map(val => Math.round(val * rate));
-            const expenseData = [32000, 35000, 29000, 38000, 33000, 31000, 31200].map(val => Math.round(val * rate));
+
+        // Global functions for AI transaction approval
+        window.approveTransaction = function(index) {
+            const transaction = window.pendingTransactions[index]
+            userData.transactions.unshift(transaction)
+            saveUserData(currentUser.id)
+            updateAllDisplays()
             
-            window.cashFlowChart.data.datasets[0].data = incomeData;
-            window.cashFlowChart.data.datasets[1].data = expenseData;
-            window.cashFlowChart.update();
-            
-            // Update pie chart
-            const netIncome = Math.round(63050 * rate);
-            const totalExpenses = Math.round(31200 * rate);
-            
-            window.pieChart.data.datasets[0].data = [netIncome, totalExpenses];
-            window.pieChart.update();
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'info') {
-            const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            notification.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>${message}</span>
-                </div>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+            // Remove from pending
+            window.pendingTransactions.splice(index, 1)
+            displayProcessedTransactions(window.pendingTransactions)
         }
 
-        // File upload functionality
-        function handleFileUpload() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf,.csv,.xlsx,.xls';
-            input.multiple = false;
-            
-            input.onchange = function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    // Show processing notification
-                    const notification = document.createElement('div');
-                    notification.className = 'fixed top-4 right-4 bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                    notification.innerHTML = `
-                        <div class="flex items-center space-x-3">
-                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>Processing ${file.name}... AI is analyzing transactions</span>
-                        </div>
-                    `;
-                    document.body.appendChild(notification);
-                    
-                    // Simulate AI processing
-                    setTimeout(() => {
-                        notification.remove();
-                        showNotification(`Successfully processed 47 transactions from ${file.name}`, 'success');
-                    }, 3000);
+        window.rejectTransaction = function(index) {
+            window.pendingTransactions.splice(index, 1)
+            displayProcessedTransactions(window.pendingTransactions)
+        }
+
+        // Approve all transactions
+        document.getElementById('approveAll').addEventListener('click', function() {
+            if (window.pendingTransactions && window.pendingTransactions.length > 0) {
+                window.pendingTransactions.forEach(transaction => {
+                    userData.transactions.unshift(transaction)
+                })
+                saveUserData(currentUser.id)
+                updateAllDisplays()
+                
+                // Clear pending transactions
+                window.pendingTransactions = []
+                document.getElementById('processedTransactions').classList.add('hidden')
+                
+                alert('All transactions have been imported successfully!')
+            }
+        })
+
+        // Reject all transactions
+        document.getElementById('rejectAll').addEventListener('click', function() {
+            window.pendingTransactions = []
+            document.getElementById('processedTransactions').classList.add('hidden')
+        })
+
+        // Check authentication state
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                // Load saved country preference
+                const savedCountry = localStorage.getItem('selectedCountry')
+                if (savedCountry && countryConfigs[savedCountry]) {
+                    selectedCountry = savedCountry
+                    currentConfig = countryConfigs[selectedCountry]
                 }
-            };
-            
-            input.click();
-        }
+                showDashboard(session.user)
+            } else {
+                showLoginScreen()
+            }
+        })
 
-        // Initialize charts
+        // Event listeners
+        googleSignInBtn.addEventListener('click', signInWithGoogle)
+        signOutBtn.addEventListener('click', signOut)
+
+        // Tab functionality
+        const navTabs = document.querySelectorAll('.nav-tab')
+        const tabContents = document.querySelectorAll('.tab-content')
+
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab
+                
+                // Update active tab
+                navTabs.forEach(t => {
+                    t.classList.remove('active', 'border-blue-500', 'text-blue-600')
+                    t.classList.add('border-transparent', 'text-gray-500')
+                })
+                tab.classList.add('active', 'border-blue-500', 'text-blue-600')
+                tab.classList.remove('border-transparent', 'text-gray-500')
+                
+                // Show target content
+                tabContents.forEach(content => {
+                    content.classList.add('hidden')
+                })
+                document.getElementById(targetTab).classList.remove('hidden')
+            })
+        })
+
+        // Initialize charts when dashboard loads
         function initializeCharts() {
-            // Cash Flow Chart
-            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
-            window.cashFlowChart = new Chart(cashFlowCtx, {
-                type: 'bar',
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d')
+            new Chart(revenueCtx, {
+                type: 'line',
                 data: {
-                    labels: ['Jul 2023', 'Aug 2023', 'Sep 2023', 'Oct 2023', 'Nov 2023', 'Dec 2023', 'Jan 2024'],
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                     datasets: [{
-                        label: 'Income',
-                        data: [85000, 92000, 78000, 94000, 88000, 96000, 94250],
-                        backgroundColor: '#10B981',
-                        borderRadius: 4,
-                        borderSkipped: false,
-                    }, {
-                        label: 'Expenses',
-                        data: [32000, 35000, 29000, 38000, 33000, 31000, 31200],
-                        backgroundColor: '#64748B',
-                        borderRadius: 4,
-                        borderSkipped: false,
+                        label: 'Revenue',
+                        data: [45000, 52000, 48000, 61000, 55000, 67000],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: {
-                                    size: 12,
-                                    family: 'Inter'
-                                }
-                            }
+                            display: false
                         }
                     },
                     scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 11,
-                                    family: 'Inter'
-                                }
-                            }
-                        },
                         y: {
                             beginAtZero: true,
-                            grid: {
-                                color: '#F1F5F9'
-                            },
                             ticks: {
                                 callback: function(value) {
-                                    return 'R' + (value/1000) + 'k';
-                                },
-                                font: {
-                                    size: 11,
-                                    family: 'Inter'
+                                    return 'R ' + value.toLocaleString()
                                 }
                             }
                         }
                     }
                 }
-            });
+            })
 
-            // Pie Chart
-            const pieCtx = document.getElementById('pieChart').getContext('2d');
-            window.pieChart = new Chart(pieCtx, {
+            // Expense Chart
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d')
+            new Chart(expenseCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Net Income', 'Expenses'],
+                    labels: ['Office Rent', 'Software', 'Marketing', 'Travel', 'Other'],
                     datasets: [{
-                        data: [63050, 31200],
-                        backgroundColor: ['#10B981', '#64748B'],
-                        borderWidth: 0,
-                        cutout: '65%'
+                        data: [35000, 12000, 8000, 5000, 15000],
+                        backgroundColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(245, 158, 11)',
+                            'rgb(34, 197, 94)',
+                            'rgb(168, 85, 247)',
+                            'rgb(107, 114, 128)'
+                        ]
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                font: {
-                                    size: 12,
-                                    family: 'Inter'
-                                }
-                            }
+                            position: 'bottom'
                         }
                     }
                 }
-            });
+            })
         }
+
+        // Initialize charts after a short delay to ensure DOM is ready
+        setTimeout(initializeCharts, 500)
+
+        // AI Upload functionality
+        document.getElementById('bankStatementUpload').addEventListener('change', async function(e) {
+            const file = e.target.files[0]
+            if (!file) return
+
+            // Show processing status
+            document.getElementById('processingStatus').classList.remove('hidden')
+            
+            try {
+                // Simulate AI processing delay
+                await new Promise(resolve => setTimeout(resolve, 2000))
+                
+                const processedTransactions = await aiProcessor.processFile(file)
+                
+                // Hide processing status
+                document.getElementById('processingStatus').classList.add('hidden')
+                
+                // Show processed transactions
+                displayProcessedTransactions(processedTransactions)
+                
+                // Update AI insights
+                updateAIInsights(processedTransactions)
+                
+            } catch (error) {
+                console.error('Error processing file:', error)
+                document.getElementById('processingStatus').classList.add('hidden')
+                alert('Error processing file. Please check the format and try again.')
+            }
+        })
+
+        function displayProcessedTransactions(transactions) {
+            const tbody = document.getElementById('processedTransactionsBody')
+            tbody.innerHTML = ''
+            
+            transactions.forEach((transaction, index) => {
+                const row = document.createElement('tr')
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${currentConfig.symbol}${Math.abs(transaction.amount).toLocaleString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.category}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${transaction.confidence * 100}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">${Math.round(transaction.confidence * 100)}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button onclick="approveTransaction(${index})" class="text-green-600 hover:text-green-800 mr-2">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button onclick="rejectTransaction(${index})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                `
+                tbody.appendChild(row)
+            })
+            
+            document.getElementById('processedTransactions').classList.remove('hidden')
+            window.pendingTransactions = transactions
+        }
+
+        function updateAIInsights(transactions) {
+            const insights = document.getElementById('aiInsights')
+            const totalTransactions = transactions.length
+            const revenue = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const expenses = Math.abs(transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const categories = [...new Set(transactions.map(t => t.category))]
+            
+            insights.innerHTML = `
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <h4 class="font-medium text-blue-900 mb-2">Processing Complete!</h4>
+                    <p class="text-sm text-blue-700">Processed ${totalTransactions} transactions</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <h4 class="font-medium text-green-900 mb-2">Revenue Detected</h4>
+                    <p class="text-sm text-green-700">${currentConfig.symbol}${revenue.toLocaleString()} in income</p>
+                </div>
+                <div class="bg-red-50 rounded-lg p-4">
+                    <h4 class="font-medium text-red-900 mb-2">Expenses Detected</h4>
+                    <p class="text-sm text-red-700">${currentConfig.symbol}${expenses.toLocaleString()} in expenses</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <h4 class="font-medium text-purple-900 mb-2">Categories Found</h4>
+                    <p class="text-sm text-purple-700">${categories.length} different categories identified</p>
+                </div>
+            `
+        }
+
+        // Tax Calendar functionality
+        function initializeTaxCalendar() {
+            const currentDate = new Date()
+            const currentMonth = currentDate.getMonth()
+            const currentYear = currentDate.getFullYear()
+            
+            updateCalendarDisplay(currentYear, currentMonth)
+            updateUpcomingDeadlines()
+        }
+
+        function updateCalendarDisplay(year, month) {
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December']
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`
+            
+            const firstDay = new Date(year, month, 1).getDay()
+            const daysInMonth = new Date(year, month + 1, 0).getDate()
+            
+            const calendarGrid = document.getElementById('calendarGrid')
+            calendarGrid.innerHTML = ''
+            
+            // Empty cells for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div')
+                emptyCell.className = 'p-2'
+                calendarGrid.appendChild(emptyCell)
+            }
+            
+            // Days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div')
+                dayCell.className = 'p-2 text-center text-sm border border-gray-200 hover:bg-gray-50 cursor-pointer'
+                dayCell.textContent = day
+                
+                // Check if this day has tax deadlines
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const hasDeadline = currentConfig.taxDeadlines.some(deadline => deadline.date === dateStr)
+                
+                if (hasDeadline) {
+                    dayCell.classList.add('bg-red-100', 'text-red-800', 'font-semibold')
+                }
+                
+                calendarGrid.appendChild(dayCell)
+            }
+        }
+
+        function updateUpcomingDeadlines() {
+            const deadlinesContainer = document.getElementById('upcomingDeadlines')
+            const today = new Date()
+            
+            const upcomingDeadlines = currentConfig.taxDeadlines
+                .map(deadline => ({
+                    ...deadline,
+                    dateObj: new Date(deadline.date)
+                }))
+                .filter(deadline => deadline.dateObj >= today)
+                .sort((a, b) => a.dateObj - b.dateObj)
+                .slice(0, 5)
+            
+            deadlinesContainer.innerHTML = upcomingDeadlines.map(deadline => {
+                const daysUntil = Math.ceil((deadline.dateObj - today) / (1000 * 60 * 60 * 24))
+                const urgencyClass = daysUntil <= 7 ? 'bg-red-100 text-red-800' : 
+                                   daysUntil <= 30 ? 'bg-yellow-100 text-yellow-800' : 
+                                   'bg-green-100 text-green-800'
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-gray-900">${deadline.name}</h4>
+                            <span class="text-xs px-2 py-1 rounded-full ${urgencyClass}">
+                                ${daysUntil} days
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600">${deadline.dateObj.toLocaleDateString()}</p>
+                    </div>
+                `
+            }).join('')
+        }
+
+        // Calendar navigation
+        let currentCalendarMonth = new Date().getMonth()
+        let currentCalendarYear = new Date().getFullYear()
+
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentCalendarMonth--
+            if (currentCalendarMonth < 0) {
+                currentCalendarMonth = 11
+                currentCalendarYear--
+            }
+            updateCalendarDisplay(currentCalendarYear, currentCalendarMonth)
+        })
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentCalendarMonth++
+            if (currentCalendarMonth > 11) {
+                currentCalendarMonth = 0
+                currentCalendarYear++
+            }
+            updateCalendarDisplay(currentCalendarYear, currentCalendarMonth)
+        })
+
+        // Initialize tax calendar when tab is shown
+        document.querySelector('[data-tab="tax-calendar"]').addEventListener('click', () => {
+            setTimeout(initializeTaxCalendar, 100)
+        })
+
+        // User data storage
+        let currentUser = null
+        let userData = {
+            transactions: [],
+            clients: [],
+            stats: {
+                totalRevenue: 0,
+                activeClients: 0,
+                pendingInvoices: 0,
+                monthlyExpenses: 0
+            }
+        }
+
+        // Load user data from localStorage
+        function loadUserData(userId) {
+            const stored = localStorage.getItem(`userData_${userId}`)
+            if (stored) {
+                userData = JSON.parse(stored)
+            }
+            updateAllDisplays()
+        }
+
+        // Save user data to localStorage
+        function saveUserData(userId) {
+            localStorage.setItem(`userData_${userId}`, JSON.stringify(userData))
+        }
+
+        // Currency formatting function
+        function formatCurrency(amount) {
+            return `${currentConfig.symbol}${Math.abs(amount).toLocaleString()}`
+        }
+
+        // Update all dashboard displays
+        function updateAllDisplays() {
+            updateStatsCards()
+            updateTransactionTable()
+            updateClientGrid()
+            updateRecentActivity()
+            updateQuickStats()
+        }
+
+        // Update stats cards
+        function updateStatsCards() {
+            const revenue = userData.transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const expenses = Math.abs(userData.transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const pendingAmount = userData.transactions.filter(t => t.status === 'Pending').reduce((sum, t) => sum + t.amount, 0)
+            
+            document.querySelector('.text-3xl.font-bold.text-gray-900').textContent = `R ${revenue.toLocaleString()}`
+            document.querySelectorAll('.text-3xl.font-bold.text-gray-900')[1].textContent = userData.clients.length.toString()
+            document.querySelectorAll('.text-3xl.font-bold.text-gray-900')[2].textContent = userData.transactions.filter(t => t.status === 'Pending').length.toString()
+            document.querySelectorAll('.text-3xl.font-bold.text-gray-900')[3].textContent = `R ${expenses.toLocaleString()}`
+        }
+
+        // Update transaction table
+        function updateTransactionTable() {
+            const tbody = document.querySelector('#transactions tbody')
+            tbody.innerHTML = ''
+            
+            userData.transactions.slice(0, 10).forEach(transaction => {
+                const row = document.createElement('tr')
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.client}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${transaction.amount > 0 ? '+' : ''}R ${Math.abs(transaction.amount).toLocaleString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                            transaction.status === 'Paid' ? 'bg-green-100 text-green-800' : 
+                            transaction.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            'bg-gray-100 text-gray-800'
+                        }">${transaction.status}</span>
+                    </td>
+                `
+                tbody.appendChild(row)
+            })
+        }
+
+        // Update client grid
+        function updateClientGrid() {
+            const grid = document.querySelector('#clients .grid')
+            grid.innerHTML = ''
+            
+            userData.clients.forEach(client => {
+                const clientRevenue = userData.transactions
+                    .filter(t => t.client === client.name && t.amount > 0)
+                    .reduce((sum, t) => sum + t.amount, 0)
+                
+                const colors = ['blue', 'green', 'purple', 'orange', 'red']
+                const color = colors[Math.floor(Math.random() * colors.length)]
+                
+                const clientCard = document.createElement('div')
+                clientCard.className = 'border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow'
+                clientCard.innerHTML = `
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="bg-${color}-100 w-10 h-10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-building text-${color}-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${client.name}</h4>
+                            <p class="text-sm text-gray-500">${client.industry}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <p class="text-gray-600"><i class="fas fa-envelope mr-2"></i>${client.email}</p>
+                        <p class="text-gray-600"><i class="fas fa-phone mr-2"></i>${client.phone}</p>
+                        <p class="text-green-600 font-medium"><i class="fas fa-dollar-sign mr-2"></i>R ${clientRevenue.toLocaleString()} YTD</p>
+                    </div>
+                `
+                grid.appendChild(clientCard)
+            })
+        }
+
+        // Update recent activity
+        function updateRecentActivity() {
+            const activityContainer = document.querySelector('#overview .space-y-4')
+            activityContainer.innerHTML = ''
+            
+            userData.transactions.slice(0, 3).forEach(transaction => {
+                const activity = document.createElement('div')
+                activity.className = 'flex items-center space-x-4'
+                activity.innerHTML = `
+                    <div class="bg-${transaction.amount > 0 ? 'green' : 'red'}-100 p-2 rounded-full">
+                        <i class="fas fa-${transaction.amount > 0 ? 'plus' : 'minus'} text-${transaction.amount > 0 ? 'green' : 'red'}-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">${transaction.description}</p>
+                        <p class="text-sm text-gray-500">${transaction.client} • R ${Math.abs(transaction.amount).toLocaleString()}</p>
+                    </div>
+                    <span class="text-sm text-gray-500">${new Date(transaction.date).toLocaleDateString()}</span>
+                `
+                activityContainer.appendChild(activity)
+            })
+        }
+
+        // Update quick stats
+        function updateQuickStats() {
+            const revenue = userData.transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const expenses = Math.abs(userData.transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const pending = userData.transactions.filter(t => t.status === 'Pending').reduce((sum, t) => sum + t.amount, 0)
+            const profit = revenue - expenses
+            
+            const statsElements = document.querySelectorAll('#reports .font-semibold')
+            if (statsElements.length >= 4) {
+                statsElements[0].textContent = `R ${revenue.toLocaleString()}`
+                statsElements[1].textContent = `R ${pending.toLocaleString()}`
+                statsElements[2].textContent = `R ${expenses.toLocaleString()}`
+                statsElements[3].textContent = `R ${profit.toLocaleString()}`
+            }
+        }
+
+        // Add Transaction functionality
+        document.getElementById('addTransactionBtn').addEventListener('click', function() {
+            const modal = document.createElement('div')
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-lg font-semibold mb-4">Add Transaction</h3>
+                    <form id="transactionForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <input type="text" id="description" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (R)</label>
+                                <input type="number" id="amount" class="w-full border border-gray-300 rounded-lg px-3 py-2" step="0.01" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+                                <input type="text" id="client" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    <option value="Paid">Paid</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Expense">Expense</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button type="button" id="cancelTransaction" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add Transaction</button>
+                        </div>
+                    </form>
+                </div>
+            `
+            document.body.appendChild(modal)
+            
+            document.getElementById('cancelTransaction').addEventListener('click', () => {
+                document.body.removeChild(modal)
+            })
+            
+            document.getElementById('transactionForm').addEventListener('submit', function(e) {
+                e.preventDefault()
+                const description = document.getElementById('description').value
+                const amount = parseFloat(document.getElementById('amount').value)
+                const client = document.getElementById('client').value || 'General'
+                const status = document.getElementById('status').value
+                
+                const transaction = {
+                    id: Date.now(),
+                    date: new Date().toISOString().split('T')[0],
+                    description,
+                    amount: status === 'Expense' ? -Math.abs(amount) : amount,
+                    client,
+                    status
+                }
+                
+                userData.transactions.unshift(transaction)
+                saveUserData(currentUser.id)
+                updateAllDisplays()
+                document.body.removeChild(modal)
+            })
+        })
+
+        // Add Client functionality
+        document.getElementById('addClientBtn').addEventListener('click', function() {
+            const modal = document.createElement('div')
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-lg font-semibold mb-4">Add Client</h3>
+                    <form id="clientForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                                <input type="text" id="clientName" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" id="clientEmail" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <input type="tel" id="clientPhone" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                                <input type="text" id="clientIndustry" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button type="button" id="cancelClient" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add Client</button>
+                        </div>
+                    </form>
+                </div>
+            `
+            document.body.appendChild(modal)
+            
+            document.getElementById('cancelClient').addEventListener('click', () => {
+                document.body.removeChild(modal)
+            })
+            
+            document.getElementById('clientForm').addEventListener('submit', function(e) {
+                e.preventDefault()
+                const name = document.getElementById('clientName').value
+                const email = document.getElementById('clientEmail').value
+                const phone = document.getElementById('clientPhone').value || 'Not provided'
+                const industry = document.getElementById('clientIndustry').value || 'Not specified'
+                
+                const client = {
+                    id: Date.now(),
+                    name,
+                    email,
+                    phone,
+                    industry
+                }
+                
+                userData.clients.push(client)
+                saveUserData(currentUser.id)
+                updateAllDisplays()
+                document.body.removeChild(modal)
+            })
+        })
+
+        // Report functionality
+        document.getElementById('monthlyReportBtn').addEventListener('click', function() {
+            const currentMonth = new Date().getMonth()
+            const currentYear = new Date().getFullYear()
+            
+            const monthlyTransactions = userData.transactions.filter(t => {
+                const transactionDate = new Date(t.date)
+                return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear
+            })
+            
+            const revenue = monthlyTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const expenses = Math.abs(monthlyTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const profit = revenue - expenses
+            
+            const modal = document.createElement('div')
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+                    <h3 class="text-lg font-semibold mb-4">Monthly Financial Report</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span>Total Revenue:</span>
+                            <span class="font-semibold text-green-600">R ${revenue.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Expenses:</span>
+                            <span class="font-semibold text-red-600">R ${expenses.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2">
+                            <span class="font-semibold">Net Profit:</span>
+                            <span class="font-semibold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">R ${profit.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Transactions:</span>
+                            <span>${monthlyTransactions.length}</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `
+            document.body.appendChild(modal)
+        })
+
+        document.getElementById('taxSummaryBtn').addEventListener('click', function() {
+            const currentYear = new Date().getFullYear()
+            const yearlyTransactions = userData.transactions.filter(t => new Date(t.date).getFullYear() === currentYear)
+            
+            const totalIncome = yearlyTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const totalExpenses = Math.abs(yearlyTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const taxableIncome = Math.max(0, totalIncome - totalExpenses)
+            const estimatedTax = taxableIncome * 0.28 // SA company tax rate
+            
+            const modal = document.createElement('div')
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+                    <h3 class="text-lg font-semibold mb-4">Tax Summary ${currentYear}</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span>Total Income:</span>
+                            <span class="font-semibold">R ${totalIncome.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Expenses:</span>
+                            <span class="font-semibold">R ${totalExpenses.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2">
+                            <span class="font-semibold">Taxable Income:</span>
+                            <span class="font-semibold">R ${taxableIncome.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-semibold text-red-600">Estimated Tax (28%):</span>
+                            <span class="font-semibold text-red-600">R ${estimatedTax.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `
+            document.body.appendChild(modal)
+        })
+
+        document.getElementById('clientRevenueBtn').addEventListener('click', function() {
+            const clientRevenues = userData.clients.map(client => {
+                const revenue = userData.transactions
+                    .filter(t => t.client === client.name && t.amount > 0)
+                    .reduce((sum, t) => sum + t.amount, 0)
+                return { name: client.name, revenue }
+            }).sort((a, b) => b.revenue - a.revenue)
+            
+            const modal = document.createElement('div')
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+                    <h3 class="text-lg font-semibold mb-4">Client Revenue Report</h3>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        ${clientRevenues.map(client => `
+                            <div class="flex justify-between">
+                                <span>${client.name}</span>
+                                <span class="font-semibold">R ${client.revenue.toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `
+            document.body.appendChild(modal)
+        })
+
+        // Update auth state change to load user data
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                currentUser = session.user
+                showDashboard(session.user)
+                loadUserData(session.user.id)
+            } else {
+                showLoginScreen()
+                currentUser = null
+            }
+        })
+
+        // Button functionality
+        document.getElementById('addTransactionBtn').addEventListener('click', function() {
+            const description = prompt('Enter transaction description:')
+            const amount = prompt('Enter amount (use - for expenses):')
+            const client = prompt('Enter client name (optional):')
+            
+            if (description && amount) {
+                addTransaction(description, parseFloat(amount), client || '-')
+            }
+        })
+
+        document.getElementById('addClientBtn').addEventListener('click', function() {
+            const name = prompt('Enter client name:')
+            const email = prompt('Enter client email:')
+            const phone = prompt('Enter client phone:')
+            const industry = prompt('Enter client industry:')
+            
+            if (name && email) {
+                addClient(name, email, phone, industry)
+            }
+        })
+
+        document.getElementById('monthlyReportBtn').addEventListener('click', function() {
+            generateMonthlyReport()
+        })
+
+        document.getElementById('taxSummaryBtn').addEventListener('click', function() {
+            generateTaxSummary()
+        })
+
+        document.getElementById('clientRevenueBtn').addEventListener('click', function() {
+            generateClientRevenue()
+        })
+
+        // Data management functions
+        let transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+        let clients = JSON.parse(localStorage.getItem('clients') || '[]')
+
+        function addTransaction(description, amount, client) {
+            const transaction = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                description,
+                amount,
+                client,
+                status: amount > 0 ? 'Paid' : 'Expense'
+            }
+            
+            transactions.unshift(transaction)
+            localStorage.setItem('transactions', JSON.stringify(transactions))
+            updateTransactionTable()
+            updateDashboardStats()
+            alert('Transaction added successfully!')
+        }
+
+        function addClient(name, email, phone, industry) {
+            const client = {
+                id: Date.now(),
+                name,
+                email,
+                phone: phone || 'Not provided',
+                industry: industry || 'Not specified',
+                totalRevenue: 0
+            }
+            
+            clients.push(client)
+            localStorage.setItem('clients', JSON.stringify(clients))
+            updateClientGrid()
+            alert('Client added successfully!')
+        }
+
+        function updateTransactionTable() {
+            const tbody = document.querySelector('#transactions tbody')
+            tbody.innerHTML = ''
+            
+            transactions.slice(0, 10).forEach(transaction => {
+                const row = document.createElement('tr')
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.client}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${transaction.amount > 0 ? '+' : ''}R ${Math.abs(transaction.amount).toLocaleString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                            transaction.status === 'Paid' ? 'bg-green-100 text-green-800' : 
+                            transaction.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            'bg-gray-100 text-gray-800'
+                        }">${transaction.status}</span>
+                    </td>
+                `
+                tbody.appendChild(row)
+            })
+        }
+
+        function updateClientGrid() {
+            const grid = document.querySelector('#clients .grid')
+            grid.innerHTML = ''
+            
+            clients.forEach(client => {
+                const clientRevenue = transactions
+                    .filter(t => t.client === client.name && t.amount > 0)
+                    .reduce((sum, t) => sum + t.amount, 0)
+                
+                const clientCard = document.createElement('div')
+                clientCard.className = 'border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow'
+                clientCard.innerHTML = `
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-building text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${client.name}</h4>
+                            <p class="text-sm text-gray-500">${client.industry}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <p class="text-gray-600"><i class="fas fa-envelope mr-2"></i>${client.email}</p>
+                        <p class="text-gray-600"><i class="fas fa-phone mr-2"></i>${client.phone}</p>
+                        <p class="text-green-600 font-medium"><i class="fas fa-dollar-sign mr-2"></i>R ${clientRevenue.toLocaleString()} YTD</p>
+                    </div>
+                `
+                grid.appendChild(clientCard)
+            })
+        }
+
+        function updateDashboardStats() {
+            const totalRevenue = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const totalExpenses = Math.abs(transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const netProfit = totalRevenue - totalExpenses
+            
+            // Update stats cards (you can expand this to update the actual DOM elements)
+            console.log('Updated stats:', { totalRevenue, totalExpenses, netProfit })
+        }
+
+        function generateMonthlyReport() {
+            const currentMonth = new Date().getMonth()
+            const currentYear = new Date().getFullYear()
+            
+            const monthlyTransactions = transactions.filter(t => {
+                const transactionDate = new Date(t.date)
+                return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear
+            })
+            
+            const revenue = monthlyTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const expenses = Math.abs(monthlyTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const profit = revenue - expenses
+            
+            alert(`Monthly Financial Report\n\nRevenue: R ${revenue.toLocaleString()}\nExpenses: R ${expenses.toLocaleString()}\nNet Profit: R ${profit.toLocaleString()}\nTransactions: ${monthlyTransactions.length}`)
+        }
+
+        function generateTaxSummary() {
+            const currentYear = new Date().getFullYear()
+            const yearlyTransactions = transactions.filter(t => new Date(t.date).getFullYear() === currentYear)
+            
+            const totalIncome = yearlyTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+            const totalExpenses = Math.abs(yearlyTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))
+            const taxableIncome = totalIncome - totalExpenses
+            const estimatedTax = taxableIncome * 0.28 // Rough SA tax estimate
+            
+            alert(`Tax Summary ${currentYear}\n\nTotal Income: R ${totalIncome.toLocaleString()}\nTotal Expenses: R ${totalExpenses.toLocaleString()}\nTaxable Income: R ${taxableIncome.toLocaleString()}\nEstimated Tax: R ${estimatedTax.toLocaleString()}`)
+        }
+
+        function generateClientRevenue() {
+            const clientRevenues = clients.map(client => {
+                const revenue = transactions
+                    .filter(t => t.client === client.name && t.amount > 0)
+                    .reduce((sum, t) => sum + t.amount, 0)
+                return { name: client.name, revenue }
+            }).sort((a, b) => b.revenue - a.revenue)
+            
+            let report = 'Client Revenue Report\n\n'
+            clientRevenues.forEach(client => {
+                report += `${client.name}: R ${client.revenue.toLocaleString()}\n`
+            })
+            
+            alert(report)
+        }
+
+        // Initialize with user's data when dashboard loads
+        function initializeUserData() {
+            updateTransactionTable()
+            updateClientGrid()
+            updateDashboardStats()
+        }
+
+        // Call when user signs in
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                showDashboard(session.user)
+                initializeUserData()
+            } else {
+                showLoginScreen()
+            }
+        })
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9672b219b7350714',t:'MTc1Mzg1NTg1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9672ff2a70c3df88',t:'MTc1Mzg1OTAxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
