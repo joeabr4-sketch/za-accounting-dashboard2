@@ -567,11 +567,9 @@
     </div>
 
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://ehpjupxbworwiepbuxkn.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0'
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        // Demo mode - bypassing Supabase for now
+        let isDemoMode = true
+        let currentUser = null
 
         // Country configurations
         const countryConfigs = {
@@ -774,13 +772,19 @@
                 currentConfig = countryConfigs[selectedCountry]
                 localStorage.setItem('selectedCountry', selectedCountry)
                 
-                const { data, error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin + '/auth/callback'
+                // Demo user for instant access
+                currentUser = {
+                    id: 'demo-user-123',
+                    email: 'demo@globalaccounting.com',
+                    user_metadata: {
+                        full_name: 'Demo User',
+                        avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format'
                     }
-                })
-                if (error) throw error
+                }
+                
+                showDashboard(currentUser)
+                loadUserData(currentUser.id)
+                
             } catch (error) {
                 console.error('Error signing in:', error.message)
                 alert('Error signing in: ' + error.message)
@@ -789,8 +793,8 @@
 
         async function signOut() {
             try {
-                const { error } = await supabase.auth.signOut()
-                if (error) throw error
+                currentUser = null
+                localStorage.removeItem('currentUser')
                 showLoginScreen()
             } catch (error) {
                 console.error('Error signing out:', error.message)
@@ -805,6 +809,9 @@
         function showDashboard(user) {
             loginScreen.classList.add('hidden')
             dashboard.classList.remove('hidden')
+            
+            // Save user to localStorage
+            localStorage.setItem('currentUser', JSON.stringify(user))
             
             // Update user info
             if (user.user_metadata) {
@@ -853,20 +860,29 @@
             document.getElementById('processedTransactions').classList.add('hidden')
         })
 
-        // Check authentication state
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                // Load saved country preference
-                const savedCountry = localStorage.getItem('selectedCountry')
-                if (savedCountry && countryConfigs[savedCountry]) {
-                    selectedCountry = savedCountry
-                    currentConfig = countryConfigs[selectedCountry]
-                }
-                showDashboard(session.user)
+        // Initialize app
+        function initializeApp() {
+            // Load saved country preference
+            const savedCountry = localStorage.getItem('selectedCountry')
+            if (savedCountry && countryConfigs[savedCountry]) {
+                selectedCountry = savedCountry
+                currentConfig = countryConfigs[savedCountry]
+                document.getElementById('countrySelector').value = savedCountry
+            }
+            
+            // Check if user was previously signed in
+            const savedUser = localStorage.getItem('currentUser')
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser)
+                showDashboard(currentUser)
+                loadUserData(currentUser.id)
             } else {
                 showLoginScreen()
             }
-        })
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp)
 
         // Event listeners
         googleSignInBtn.addEventListener('click', signInWithGoogle)
@@ -1551,17 +1567,7 @@
             document.body.appendChild(modal)
         })
 
-        // Update auth state change to load user data
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                currentUser = session.user
-                showDashboard(session.user)
-                loadUserData(session.user.id)
-            } else {
-                showLoginScreen()
-                currentUser = null
-            }
-        })
+        // User data management is now handled by the demo system
 
         // Button functionality
         document.getElementById('addTransactionBtn').addEventListener('click', function() {
@@ -1750,15 +1756,7 @@
             updateDashboardStats()
         }
 
-        // Call when user signs in
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                showDashboard(session.user)
-                initializeUserData()
-            } else {
-                showLoginScreen()
-            }
-        })
+        // Demo system handles user state automatically
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9672ff2a70c3df88',t:'MTc1Mzg1OTAxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96731a9930dbe2c5',t:'MTc1Mzg2MDEzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
