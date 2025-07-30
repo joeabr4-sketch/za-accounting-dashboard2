@@ -766,29 +766,23 @@
         const aiProcessor = new AITransactionProcessor()
 
         // Authentication functions
-        async function signInWithGoogle() {
-            try {
-                selectedCountry = document.getElementById('countrySelector').value
-                currentConfig = countryConfigs[selectedCountry]
-                localStorage.setItem('selectedCountry', selectedCountry)
-                
-                // Demo user for instant access
-                currentUser = {
-                    id: 'demo-user-123',
-                    email: 'demo@globalaccounting.com',
-                    user_metadata: {
-                        full_name: 'Demo User',
-                        avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format'
-                    }
+        function signInWithGoogle() {
+            selectedCountry = document.getElementById('countrySelector').value
+            currentConfig = countryConfigs[selectedCountry]
+            localStorage.setItem('selectedCountry', selectedCountry)
+            
+            // Demo user for instant access
+            currentUser = {
+                id: 'demo-user-123',
+                email: 'demo@globalaccounting.com',
+                user_metadata: {
+                    full_name: 'Demo User',
+                    avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format'
                 }
-                
-                showDashboard(currentUser)
-                loadUserData(currentUser.id)
-                
-            } catch (error) {
-                console.error('Error signing in:', error.message)
-                alert('Error signing in: ' + error.message)
             }
+            
+            showDashboard(currentUser)
+            loadUserData(currentUser.id)
         }
 
         async function signOut() {
@@ -882,11 +876,15 @@
         }
         
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initializeApp)
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp()
+            
+            // Set up event listeners
+            googleSignInBtn.addEventListener('click', signInWithGoogle)
+            signOutBtn.addEventListener('click', signOut)
+        })
 
-        // Event listeners
-        googleSignInBtn.addEventListener('click', signInWithGoogle)
-        signOutBtn.addEventListener('click', signOut)
+        // Event listeners are now set up in DOMContentLoaded
 
         // Tab functionality
         const navTabs = document.querySelectorAll('.nav-tab')
@@ -1180,8 +1178,7 @@
             setTimeout(initializeTaxCalendar, 100)
         })
 
-        // User data storage
-        let currentUser = null
+        // User data storage (currentUser already declared above)
         let userData = {
             transactions: [],
             clients: [],
@@ -1758,5 +1755,5 @@
 
         // Demo system handles user state automatically
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96731a9930dbe2c5',t:'MTc1Mzg2MDEzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9673306a83203ea6',t:'MTc1Mzg2MTAyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
