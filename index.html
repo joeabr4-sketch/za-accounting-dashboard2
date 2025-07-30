@@ -1,0 +1,1178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2113.65">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+    span.s1 {font: 12.0px 'Apple Color Emoji'}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;ZA Accounting Dashboard&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.jsdelivr.net/npm/chart.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/@supabase/supabase-js@2"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: 'Inter', sans-serif; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.chart-container { position: relative; height: 280px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body class="bg-slate-50 text-slate-900"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Authentication Modal --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="bg-white rounded-lg p-8 max-w-md w-full mx-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="text-center mb-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center mx-auto mb-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;h2 class="text-2xl font-bold text-slate-900"&gt;Welcome to Global Accountant&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;p class="text-slate-600 mt-2"&gt;Sign in to access your business dashboard&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Auth Toggle --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="flex bg-slate-100 rounded-lg p-1 mb-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button id="loginTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>Sign In</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button id="signupTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>Sign Up</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Login Form --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="loginForm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;form id="emailLoginForm" class="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;label class="block text-sm font-medium text-slate-700 mb-2"&gt;Email&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="email" id="loginEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;label class="block text-sm font-medium text-slate-700 mb-2"&gt;Password&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="password" id="loginPassword" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button type="submit" id="loginBtn" class="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors font-medium"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>Sign In</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/form&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="my-6 flex items-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex-1 border-t border-slate-300"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span class="px-4 text-sm text-slate-500"&gt;or&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex-1 border-t border-slate-300"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button id="googleLoginBtn" class="w-full flex items-center justify-center space-x-3 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;svg class="w-5 h-5" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span class="text-sm font-medium"&gt;Continue with Google&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Signup Form --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="signupForm" class="hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;form id="emailSignupForm" class="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;label class="block text-sm font-medium text-slate-700 mb-2"&gt;Full Name&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="text" id="signupName" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;label class="block text-sm font-medium text-slate-700 mb-2"&gt;Email&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="email" id="signupEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;label class="block text-sm font-medium text-slate-700 mb-2"&gt;Password&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="password" id="signupPassword" required minlength="6" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;p class="text-xs text-slate-500 mt-1"&gt;Minimum 6 characters&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;label class="block text-sm font-medium text-slate-700 mb-2"&gt;Business Name&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="text" id="signupBusiness" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button type="submit" id="signupBtn" class="w-full bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition-colors font-medium"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>Create Account</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/form&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="my-6 flex items-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex-1 border-t border-slate-300"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span class="px-4 text-sm text-slate-500"&gt;or&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex-1 border-t border-slate-300"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button id="googleSignupBtn" class="w-full flex items-center justify-center space-x-3 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;svg class="w-5 h-5" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span class="text-sm font-medium"&gt;Sign up with Google&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Loading State --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="authLoading" class="hidden text-center py-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 mx-auto mb-4"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;p class="text-slate-600"&gt;Signing you in...&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Error Message --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="authError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;p class="text-red-600 text-sm"&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="app" class="min-h-screen flex"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Sidebar --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="w-72 bg-white border-r border-slate-200 flex-shrink-0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="p-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="flex items-center space-x-3 mb-12"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2 2v14a2 2 0 002 2z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="text-xl font-bold text-slate-900"&gt;Global Accountant&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="text-sm text-slate-500"&gt;Business Suite&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;nav class="space-y-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-900 bg-slate-100 rounded-lg font-medium border-l-4 border-slate-900"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;Overview&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;Invoices&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;Expenses&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;Reports&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;VAT Summary&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;a href="#" class="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;Ask AI&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/a&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Country Selector in Sidebar --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="mt-8 pt-6 border-t border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="px-4 mb-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p class="text-xs font-medium text-slate-500 uppercase tracking-wide"&gt;Region&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="relative"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;button id="sidebarCountryBtn" class="w-full flex items-center space-x-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg font-medium transition-all"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span id="sidebarSelectedFlag" class="text-lg"&gt;<span class="s1">🇿🇦</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="flex-1 text-left"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div id="sidebarSelectedCountry" class="text-sm font-medium"&gt;South Africa&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div id="sidebarSelectedCurrency" class="text-xs text-slate-500"&gt;ZAR (R)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                            </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div id="sidebarCountryDropdown" class="hidden absolute left-0 bottom-full mb-2 w-full bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 max-h-80 overflow-y-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="px-3 py-2 text-xs font-medium text-slate-500 uppercase tracking-wide border-b border-slate-100"&gt;Select Country&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="ZA" data-flag="<span class="s1">🇿🇦</span>" data-name="South Africa" data-currency="ZAR" data-symbol="R" data-vat="15"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇿🇦</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;South Africa&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;VAT 15% • ZAR (R)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="US" data-flag="<span class="s1">🇺🇸</span>" data-name="United States" data-currency="USD" data-symbol="$" data-vat="0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇺🇸</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;United States&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;Sales Tax varies • USD ($)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="GB" data-flag="<span class="s1">🇬🇧</span>" data-name="United Kingdom" data-currency="GBP" data-symbol="£" data-vat="20"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇬🇧</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;United Kingdom&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;VAT 20% • GBP (£)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="CA" data-flag="<span class="s1">🇨🇦</span>" data-name="Canada" data-currency="CAD" data-symbol="C$" data-vat="13"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇨🇦</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;Canada&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;HST 13% • CAD (C$)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="AU" data-flag="<span class="s1">🇦🇺</span>" data-name="Australia" data-currency="AUD" data-symbol="A$" data-vat="10"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇦🇺</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;Australia&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;GST 10% • AUD (A$)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="DE" data-flag="<span class="s1">🇩🇪</span>" data-name="Germany" data-currency="EUR" data-symbol="€" data-vat="19"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇩🇪</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;Germany&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;VAT 19% • EUR (€)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="FR" data-flag="<span class="s1">🇫🇷</span>" data-name="France" data-currency="EUR" data-symbol="€" data-vat="20"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇫🇷</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;France&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;VAT 20% • EUR (€)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="IN" data-flag="<span class="s1">🇮🇳</span>" data-name="India" data-currency="INR" data-symbol="₹" data-vat="18"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇮🇳</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;India&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;GST 18% • INR (₹)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="sidebar-country-option w-full flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 text-left" data-country="SG" data-flag="<span class="s1">🇸🇬</span>" data-name="Singapore" data-currency="SGD" data-symbol="S$" data-vat="8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-lg"&gt;<span class="s1">🇸🇬</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm font-medium text-slate-900"&gt;Singapore&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-xs text-slate-500"&gt;GST 8% • SGD (S$)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/nav&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Main Content --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="flex-1 flex flex-col"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Top Bar --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;header class="bg-white border-b border-slate-200 px-8 py-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="flex items-center justify-between"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h1 id="businessName" class="text-2xl font-bold text-slate-900"&gt;Your Business&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center space-x-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p class="text-slate-500 text-sm"&gt;Registration: 2019/123456/07&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="flex items-center space-x-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="w-2 h-2 bg-emerald-500 rounded-full"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span class="text-sm font-medium text-emerald-700"&gt;Active&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex items-center space-x-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="relative"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;button id="profileBtn" class="flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="text-right"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div id="userDisplayName" class="text-sm font-medium text-slate-900"&gt;Loading...&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="text-xs text-slate-500"&gt;Administrator&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div id="userAvatar" class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-white font-medium text-sm"&gt;?&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                            </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div id="profileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="px-4 py-2 border-b border-slate-100"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div id="dropdownUserName" class="text-sm font-medium text-slate-900"&gt;Loading...&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div id="dropdownUserEmail" class="text-xs text-slate-500"&gt;Loading...&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div id="authProvider" class="text-xs text-emerald-600 mt-1 hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;svg class="w-3 h-3 inline mr-1" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>Signed in with Google</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"&gt;Account Settings&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"&gt;Business Profile&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"&gt;Billing &amp; Subscription&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;hr class="my-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;a href="#" id="signOutBtn" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50"&gt;Sign Out&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Dashboard Content --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;main class="flex-1 p-8 bg-slate-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;!-- Key Metrics Row --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white rounded-lg p-6 border border-slate-200" data-metric="revenue"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center justify-between"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm font-medium text-slate-600"&gt;Monthly Revenue&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-2xl font-bold text-slate-900"&gt;R 94,250&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm text-emerald-600"&gt;+12.5% from last month&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white rounded-lg p-6 border border-slate-200" data-metric="outstanding"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center justify-between"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm font-medium text-slate-600"&gt;Outstanding Invoices&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-2xl font-bold text-slate-900"&gt;R 18,750&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm text-amber-600"&gt;7 invoices pending&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white rounded-lg p-6 border border-slate-200" data-metric="expenses"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center justify-between"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm font-medium text-slate-600"&gt;Monthly Expenses&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-2xl font-bold text-slate-900"&gt;R 31,200&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm text-slate-500"&gt;-5.2% from last month&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Tax Status Card --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="taxCard" class="bg-red-600 rounded-lg p-6 text-white"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center justify-between"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p id="taxLabel" class="text-sm font-medium text-red-100"&gt;VAT Payment Due&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p id="taxAmount" class="text-2xl font-bold"&gt;R 1,245&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p class="text-sm text-red-100"&gt;Due: 25 January 2024&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button class="mt-4 w-full bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg py-2 text-sm font-medium transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>Make Payment</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Cash Flow Chart --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="lg:col-span-2 bg-white rounded-lg border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6 border-b border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;h3 class="text-lg font-semibold text-slate-900"&gt;Cash Flow Analysis&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p class="text-sm text-slate-500"&gt;Monthly income vs expenses comparison&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="chart-container"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;canvas id="cashFlowChart"&gt;&lt;/canvas&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Income vs Expenses --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white rounded-lg border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6 border-b border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;h3 class="text-lg font-semibold text-slate-900"&gt;Financial Overview&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p class="text-sm text-slate-500"&gt;Current period breakdown&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="chart-container"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;canvas id="pieChart"&gt;&lt;/canvas&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="grid grid-cols-1 lg:grid-cols-2 gap-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Compliance Deadlines --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white rounded-lg border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6 border-b border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;h3 class="text-lg font-semibold text-slate-900"&gt;Compliance Calendar&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p class="text-sm text-slate-500"&gt;Upcoming SARS &amp; CIPC deadlines&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="w-3 h-3 bg-red-500 rounded-full"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="font-medium text-slate-900"&gt;VAT Return Submission&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm text-slate-600"&gt;SARS eFiling Portal&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm text-red-600 font-medium"&gt;Due: 25 January 2024&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-red-600 font-bold text-sm"&gt;3 days&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                                </span></p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="flex items-center space-x-4 p-4 bg-amber-50 border border-amber-200 rounded-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="w-3 h-3 bg-amber-500 rounded-full"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="font-medium text-slate-900"&gt;UIF Monthly Declaration&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm text-slate-600"&gt;Department of Labour&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm text-amber-600 font-medium"&gt;Due: 7 February 2024&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-amber-600 font-bold text-sm"&gt;16 days&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                                </span></p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="flex items-center space-x-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="w-3 h-3 bg-blue-500 rounded-full"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="font-medium text-slate-900"&gt;Annual Return Filing&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm text-slate-600"&gt;CIPC Online Portal&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="text-sm text-blue-600 font-medium"&gt;Due: 15 February 2024&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;span class="text-blue-600 font-bold text-sm"&gt;24 days&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;!-- Quick Actions --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white rounded-lg border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6 border-b border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;h3 class="text-lg font-semibold text-slate-900"&gt;Quick Actions&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;p class="text-sm text-slate-500"&gt;Common business tasks&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="grid grid-cols-1 gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex items-center space-x-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="font-medium text-slate-900"&gt;Create Invoice&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="text-sm text-slate-500"&gt;Generate new customer invoice&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                                </span></p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex items-center space-x-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="font-medium text-slate-900"&gt;Record Expense&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="text-sm text-slate-500"&gt;Log business expenditure&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                                </span></p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button id="uploadBankStatement" class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex items-center space-x-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="font-medium text-slate-900"&gt;Upload Bank Statement&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="text-sm text-slate-500"&gt;AI will auto-capture transactions&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                                </span></p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="flex items-center space-x-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="font-medium text-slate-900"&gt;Generate Report&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div class="text-sm text-slate-500"&gt;Financial statements &amp; analytics&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/main&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Initialize Supabase</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const supabaseUrl = 'https://ehpjupxbworwiepbuxkn.supabase.co';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Global state</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let currentUser = null;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let userProfile = null;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Current country configuration</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let currentCountry = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>code: 'ZA',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>name: 'South Africa',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>flag: '<span class="s1">🇿🇦</span>',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>currency: 'ZAR',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>symbol: 'R',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>vatRate: 15,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>taxName: 'VAT'</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Country configurations</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const countryConfigs = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'ZA': { name: 'South Africa', flag: '<span class="s1">🇿🇦</span>', currency: 'ZAR', symbol: 'R', vatRate: 15, taxName: 'VAT' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'US': { name: 'United States', flag: '<span class="s1">🇺🇸</span>', currency: 'USD', symbol: '$', vatRate: 0, taxName: 'Sales Tax' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'GB': { name: 'United Kingdom', flag: '<span class="s1">🇬🇧</span>', currency: 'GBP', symbol: '£', vatRate: 20, taxName: 'VAT' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'CA': { name: 'Canada', flag: '<span class="s1">🇨🇦</span>', currency: 'CAD', symbol: 'C$', vatRate: 13, taxName: 'HST' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'AU': { name: 'Australia', flag: '<span class="s1">🇦🇺</span>', currency: 'AUD', symbol: 'A$', vatRate: 10, taxName: 'GST' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'DE': { name: 'Germany', flag: '<span class="s1">🇩🇪</span>', currency: 'EUR', symbol: '€', vatRate: 19, taxName: 'VAT' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'FR': { name: 'France', flag: '<span class="s1">🇫🇷</span>', currency: 'EUR', symbol: '€', vatRate: 20, taxName: 'VAT' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'IN': { name: 'India', flag: '<span class="s1">🇮🇳</span>', currency: 'INR', symbol: '₹', vatRate: 18, taxName: 'GST' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'SG': { name: 'Singapore', flag: '<span class="s1">🇸🇬</span>', currency: 'SGD', symbol: 'S$', vatRate: 8, taxName: 'GST' }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Initialize app</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.addEventListener('DOMContentLoaded', async function() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Check if user is already logged in</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const { data: { session } } = await supabase.auth.getSession();</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (session) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>currentUser = session.user;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await loadUserProfile();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>showDashboard();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>showAuthModal();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Listen for auth changes</p>
+<p class="p1"><span class="Apple-converted-space">            </span>supabase.auth.onAuthStateChange(async (event, session) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (event === 'SIGNED_IN') {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>currentUser = session.user;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>await loadUserProfile();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showDashboard();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>hideAuthModal();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showNotification('Successfully signed in!', 'success');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} else if (event === 'SIGNED_OUT') {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>currentUser = null;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>userProfile = null;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showAuthModal();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showNotification('Signed out successfully', 'info');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>setupEventListeners();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>initializeCharts();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Load user profile from database</p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function loadUserProfile() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!currentUser) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const { data, error } = await supabase</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.from('profiles')</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.select('*')</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.eq('id', currentUser.id)</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.single();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (error &amp;&amp; error.code !== 'PGRST116') {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>console.error('Error loading profile:', error);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>userProfile = data;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// If no profile exists, create one</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!data) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>await createUserProfile();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateUserDisplay();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error('Error loading user profile:', error);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Create user profile in database</p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function createUserProfile() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!currentUser) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const profileData = {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>id: currentUser.id,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>email: currentUser.email,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],</p>
+<p class="p1"><span class="Apple-converted-space">                </span>business_name: 'Your Business',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>country_code: 'ZA',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>created_at: new Date().toISOString(),</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updated_at: new Date().toISOString()</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const { data, error } = await supabase</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.from('profiles')</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.insert([profileData])</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.select()</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.single();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>console.error('Error creating profile:', error);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>userProfile = data;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateUserDisplay();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error('Error creating user profile:', error);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update user display in UI</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateUserDisplay() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!currentUser) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const displayName = userProfile?.full_name || currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const businessName = userProfile?.business_name || 'Your Business';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const email = currentUser.email;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update profile display</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('userDisplayName').textContent = displayName;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('dropdownUserName').textContent = displayName;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('dropdownUserEmail').textContent = email;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('businessName').textContent = businessName;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update avatar</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const initials = displayName.split(' ').map(n =&gt; n[0]).join('').toUpperCase().substring(0, 2);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('userAvatar').innerHTML = `&lt;span class="text-white font-medium text-sm"&gt;${initials}&lt;/span&gt;`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Show auth provider if Google</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (currentUser.app_metadata?.provider === 'google') {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('authProvider').classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Load user's country preference</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (userProfile?.country_code &amp;&amp; countryConfigs[userProfile.country_code]) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>currentCountry = {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>code: userProfile.country_code,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>...countryConfigs[userProfile.country_code]</p>
+<p class="p1"><span class="Apple-converted-space">                </span>};</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateCountryDisplay();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateFinancialData();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Show/hide modals</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function showAuthModal() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('authModal').classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('app').style.display = 'none';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function hideAuthModal() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('authModal').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('app').style.display = 'flex';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function showDashboard() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('app').style.display = 'flex';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Setup event listeners</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function setupEventListeners() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Auth modal tab switching</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('loginTab').addEventListener('click', function() {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>this.classList.remove('text-slate-600');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('signupTab').classList.remove('bg-white', 'text-slate-900', 'shadow-sm');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('signupTab').classList.add('text-slate-600');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('loginForm').classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('signupForm').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('signupTab').addEventListener('click', function() {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>this.classList.remove('text-slate-600');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('loginTab').classList.remove('bg-white', 'text-slate-900', 'shadow-sm');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('loginTab').classList.add('text-slate-600');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('signupForm').classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('loginForm').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Email login form</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('emailLoginForm').addEventListener('submit', async function(e) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const email = document.getElementById('loginEmail').value;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const password = document.getElementById('loginPassword').value;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>showAuthLoading();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const { data, error } = await supabase.auth.signInWithPassword({</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>email: email,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>password: password</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>showAuthError(error.message);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showAuthError('An unexpected error occurred');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Email signup form</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('emailSignupForm').addEventListener('submit', async function(e) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const name = document.getElementById('signupName').value;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const email = document.getElementById('signupEmail').value;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const password = document.getElementById('signupPassword').value;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const businessName = document.getElementById('signupBusiness').value;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>showAuthLoading();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const { data, error } = await supabase.auth.signUp({</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>email: email,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>password: password,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>options: {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>data: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>full_name: name,</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>business_name: businessName</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>showAuthError(error.message);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>showNotification('Account created! Please check your email to verify your account.', 'success');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showAuthError('An unexpected error occurred');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Google login buttons</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('googleSignupBtn').addEventListener('click', signInWithGoogle);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Sign out</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('signOutBtn').addEventListener('click', async function(e) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await supabase.auth.signOut();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Profile dropdown</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('profileBtn').addEventListener('click', function() {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('profileDropdown').classList.toggle('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Country selector</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('sidebarCountryBtn').addEventListener('click', function() {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('sidebarCountryDropdown').classList.toggle('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Country selection</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.querySelectorAll('.sidebar-country-option').forEach(option =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>option.addEventListener('click', async function() {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const countryCode = this.dataset.country;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const config = countryConfigs[countryCode];</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>currentCountry = {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>code: countryCode,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>name: config.name,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>flag: config.flag,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>currency: config.currency,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>symbol: config.symbol,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>vatRate: config.vatRate,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>taxName: config.taxName</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Save to user profile</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (currentUser &amp;&amp; userProfile) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>await updateUserCountryPreference(countryCode);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>updateCountryDisplay();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>updateFinancialData();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>document.getElementById('sidebarCountryDropdown').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showNotification(`Switched to ${config.name}. All values updated to ${config.currency}.`, 'success');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Click outside to close dropdowns</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.addEventListener('click', function(event) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const profileBtn = document.getElementById('profileBtn');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const profileDropdown = document.getElementById('profileDropdown');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const sidebarCountryBtn = document.getElementById('sidebarCountryBtn');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const sidebarCountryDropdown = document.getElementById('sidebarCountryDropdown');</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!profileBtn.contains(event.target)) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>profileDropdown.classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!sidebarCountryBtn.contains(event.target)) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>sidebarCountryDropdown.classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// File upload</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('uploadBankStatement').addEventListener('click', handleFileUpload);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Google authentication</p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function signInWithGoogle() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>showAuthLoading();</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const { data, error } = await supabase.auth.signInWithOAuth({</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>provider: 'google',</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>options: {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>redirectTo: window.location.origin</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>showAuthError(error.message);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>showAuthError('An unexpected error occurred');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>hideAuthLoading();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update user country preference</p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function updateUserCountryPreference(countryCode) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!currentUser || !userProfile) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const { error } = await supabase</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.from('profiles')</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.update({<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>country_code: countryCode,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>updated_at: new Date().toISOString()</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>})</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>.eq('id', currentUser.id);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>console.error('Error updating country preference:', error);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>userProfile.country_code = countryCode;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error('Error updating country preference:', error);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Auth UI helpers</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function showAuthLoading() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('loginForm').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('signupForm').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('authLoading').classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('authError').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function hideAuthLoading() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('authLoading').classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('loginForm').classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function showAuthError(message) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const errorDiv = document.getElementById('authError');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>errorDiv.querySelector('p').textContent = message;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>errorDiv.classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update country display</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateCountryDisplay() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('sidebarSelectedFlag').textContent = currentCountry.flag;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('sidebarSelectedCountry').textContent = currentCountry.name;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('sidebarSelectedCurrency').textContent = `${currentCountry.currency} (${currentCountry.symbol})`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update financial data with new currency</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateFinancialData() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const symbol = currentCountry.symbol;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Sample conversion rates (in a real app, you'd fetch live rates)</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const conversionRates = {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'ZAR': 1,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'USD': 0.054,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'GBP': 0.043,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'EUR': 0.049,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'CAD': 0.073,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'AUD': 0.081,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'INR': 4.5,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>'SGD': 0.073</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const rate = conversionRates[currentCountry.currency] || 1;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update revenue</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const revenue = Math.round(94250 * rate);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('[data-metric="revenue"] .text-2xl').textContent = `${symbol} ${revenue.toLocaleString()}`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update outstanding invoices</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const outstanding = Math.round(18750 * rate);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('[data-metric="outstanding"] .text-2xl').textContent = `${symbol} ${outstanding.toLocaleString()}`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update expenses</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const expenses = Math.round(31200 * rate);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('[data-metric="expenses"] .text-2xl').textContent = `${symbol} ${expenses.toLocaleString()}`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update tax amount and label</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const taxAmount = Math.round(1245 * rate);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('taxAmount').textContent = `${symbol} ${taxAmount.toLocaleString()}`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('taxLabel').textContent = `${currentCountry.taxName} Payment Due`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update chart data</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (window.cashFlowChart &amp;&amp; window.pieChart) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateChartData(rate);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update chart data with new currency</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateChartData(rate) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update cash flow chart</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const incomeData = [85000, 92000, 78000, 94000, 88000, 96000, 94250].map(val =&gt; Math.round(val * rate));</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const expenseData = [32000, 35000, 29000, 38000, 33000, 31000, 31200].map(val =&gt; Math.round(val * rate));</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.cashFlowChart.data.datasets[0].data = incomeData;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.cashFlowChart.data.datasets[1].data = expenseData;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.cashFlowChart.update();</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Update pie chart</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const netIncome = Math.round(63050 * rate);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const totalExpenses = Math.round(31200 * rate);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.pieChart.data.datasets[0].data = [netIncome, totalExpenses];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.pieChart.update();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Show notification</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function showNotification(message, type = 'info') {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const notification = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>notification.innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="flex items-center space-x-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"&gt;&lt;/path&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span&gt;${message}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.body.appendChild(notification);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>notification.remove();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}, 3000);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// File upload functionality</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function handleFileUpload() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const input = document.createElement('input');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>input.type = 'file';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>input.accept = '.pdf,.csv,.xlsx,.xls';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>input.multiple = false;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>input.onchange = function(event) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const file = event.target.files[0];</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (file) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Show processing notification</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const notification = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>notification.className = 'fixed top-4 right-4 bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>notification.innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center space-x-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span&gt;Processing ${file.name}... AI is analyzing transactions&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>document.body.appendChild(notification);</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Simulate AI processing</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>notification.remove();</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>showNotification(`Successfully processed 47 transactions from ${file.name}`, 'success');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}, 3000);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>input.click();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Initialize charts</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function initializeCharts() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Cash Flow Chart</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.cashFlowChart = new Chart(cashFlowCtx, {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>type: 'bar',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>data: {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>labels: ['Jul 2023', 'Aug 2023', 'Sep 2023', 'Oct 2023', 'Nov 2023', 'Dec 2023', 'Jan 2024'],</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>datasets: [{</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>label: 'Income',</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>data: [85000, 92000, 78000, 94000, 88000, 96000, 94250],</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>backgroundColor: '#10B981',</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>borderRadius: 4,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>borderSkipped: false,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}, {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>label: 'Expenses',</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>data: [32000, 35000, 29000, 38000, 33000, 31000, 31200],</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>backgroundColor: '#64748B',</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>borderRadius: 4,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>borderSkipped: false,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">                </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                </span>options: {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>responsive: true,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>maintainAspectRatio: false,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>plugins: {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>legend: {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>position: 'top',</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>labels: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>usePointStyle: true,</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>padding: 20,</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>font: {</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>size: 12,</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>family: 'Inter'</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>scales: {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>x: {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>grid: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>display: false</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>ticks: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>font: {</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>size: 11,</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>family: 'Inter'</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>y: {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>beginAtZero: true,</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>grid: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>color: '#F1F5F9'</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>ticks: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>callback: function(value) {</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>return 'R' + (value/1000) + 'k';</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>font: {</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>size: 11,</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>family: 'Inter'</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Pie Chart</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const pieCtx = document.getElementById('pieChart').getContext('2d');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>window.pieChart = new Chart(pieCtx, {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>type: 'doughnut',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>data: {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>labels: ['Net Income', 'Expenses'],</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>datasets: [{</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>data: [63050, 31200],</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>backgroundColor: ['#10B981', '#64748B'],</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>borderWidth: 0,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>cutout: '65%'</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">                </span>},</p>
+<p class="p1"><span class="Apple-converted-space">                </span>options: {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>responsive: true,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>maintainAspectRatio: false,</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>plugins: {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>legend: {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>position: 'bottom',</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>labels: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>padding: 20,</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>usePointStyle: true,</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>font: {</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>size: 12,</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>family: 'Inter'</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;script&gt;(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967209e780b5070c',t:'MTc1Mzg0ODk2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&amp;&amp;(document.onreadystatechange=e,c())}}}})();&lt;/script&gt;&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
