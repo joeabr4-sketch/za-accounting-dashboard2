@@ -7,16 +7,15 @@
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   );
 
-  async function signInWithGoogle() {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-    });
+  window.signInWithGoogle = async function () {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+  });
+  if (error) {
+    console.error(error);
+    alert('Sign-in error: ' + error.message);
+  }
       
-    if (error) {
-      alert('Sign-in error: ' + error.message);
-      console.error(error);
-    }
-
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (session) {
       const user = session.user;
