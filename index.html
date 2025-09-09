@@ -2,7 +2,7 @@
 <html lang="en">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script>
-  const supabase = supabase.createClient(
+  const supabaseClient = supabase.createClient(
     "https://ehpjupxbworwiepbuxkn.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   );
@@ -11,11 +11,11 @@
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
     });
+      
     if (error) {
       alert('Sign-in error: ' + error.message);
       console.error(error);
     }
-  }
 
   supabase.auth.onAuthStateChange((event, session) => {
     if (session) {
@@ -25,7 +25,7 @@
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('dashboard').classList.remove('hidden');
     }
-  });
+      
 </script>
 <head>
     <meta charset="UTF-8">
