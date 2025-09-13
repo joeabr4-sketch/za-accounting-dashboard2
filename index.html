@@ -1,32 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script>
-  const supabaseClient = supabase.createClient(
-    "https://ehpjupxbworwiepbuxkn.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  );
-
-  window.signInWithGoogle = async function () {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-  });
-  if (error) {
-    console.error(error);
-    alert('Sign-in error: ' + error.message);
-  }
-      
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      const user = session.user;
-      document.getElementById('userName').textContent = user.user_metadata.name;
-      document.getElementById('userAvatar').src = user.user_metadata.avatar_url;
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-    }
-      
-</script>
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accounting Dashboard</title>
+
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabaseClient = supabase.createClient(
+      "https://ehpjupxbworwiepbuxkn.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." // your anon key
+    );
+
+    // Google login
+    window.signInWithGoogle = async function () {
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) {
+        console.error(error);
+        alert('Sign-in error: ' + error.message);
+      }
+    };
+
+    // Listen for auth state changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        const user = session.user;
+        document.getElementById('userName').textContent = user.user_metadata.name;
+        document.getElementById('userAvatar').src = user.user_metadata.avatar_url;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+      }
+    });
+  </script>
+</head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Accounting Dashboard v15</title>
