@@ -6,44 +6,39 @@
   <title>Accounting Dashboard</title>
 
   <!-- Supabase client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    // 🔑 Initialize Supabase client
-    const supabaseClient = supabase.createClient(
-      "https://ehpjupxbworwiepbuxkn.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...".uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0 // paste your anon key here
-    );
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+  // Initialize Supabase client
+  const supabaseClient = supabase.createClient(
+    "https://ehpjupxbworwiepbuxkn.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." // full anon key in quotes
+  );
 
-    // 🔑 Google login
-    window.signInWithGoogle = async function () {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: "https://za-accounting-dashboard2.vercel.app" // your live site
-        }
-      });
-      if (error) {
-        console.error("Google login error:", error);
-        alert('Sign-in error: ' + error.message);
-      }
-    };
-
-    // 🔑 Listen for login state changes
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        const user = session.user;
-
-        // Update UI
-        document.getElementById('userName').textContent = user.user_metadata.name;
-        document.getElementById('userAvatar').src = user.user_metadata.avatar_url;
-
-        // Hide login, show dashboard
-        document.getElementById('loginScreen')?.classList.add('hidden');
-        document.getElementById('dashboard')?.classList.remove('hidden');
+  // Google login
+  window.signInWithGoogle = async function () {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: "https://za-accounting-dashboard2.vercel.app"
       }
     });
-  </script>
-</head>    <meta charset="UTF-8">
+    if (error) {
+      console.error("Google login error:", error);
+      alert("Sign-in error: " + error.message);
+    }
+  };
+
+  // Listen for login state changes
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      const user = session.user;
+      document.getElementById("userName").textContent = user.user_metadata.name;
+      document.getElementById("userAvatar").src = user.user_metadata.avatar_url;
+      document.getElementById("loginScreen")?.classList.add("hidden");
+      document.getElementById("dashboard")?.classList.remove("hidden");
+    }
+  });
+</script></head>    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Accounting Dashboard v15</title>
     
