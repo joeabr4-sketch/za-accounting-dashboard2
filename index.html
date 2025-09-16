@@ -1,142 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Accounting Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accounting Dashboard</title>
 
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Initialize Supabase client
+    const supabaseClient = supabase.createClient(
+      "https://ehpjupxbworwiepbuxkn.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0"
+    );
 
-<!-- Supabase client -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script>
-// Initialize Supabase client
-const supabaseClient = supabase.createClient(
-"https://ehpjupxbworwiepbuxkn.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0"
-);
+    // Google login
+    window.signInWithGoogle = async function () {
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: "https://za-accounting-dashboard2.vercel.app" }
+      });
+      if (error) {
+        console.error("Google login error:", error);
+        alert("Sign-in error: " + error.message);
+      }
+    };
 
-
-// Google login
-window.signInWithGoogle = async function () {
-const { error } = await supabaseClient.auth.signInWithOAuth({
-provider: 'google',
-options: { redirectTo: "https://za-accounting-dashboard2.vercel.app" }
-});
-if (error) {
-console.error("Google login error:", error);
-alert("Sign-in error: " + error.message);
-}
-};
-
-
-// Listen for login state changes
-supabaseClient.auth.onAuthStateChange((event, session) => {
-if (session) {
-const user = session.user;
-document.getElementById("userName").textContent = user.user_metadata.name;
-document.getElementById("userAvatar").src = user.user_metadata.avatar_url;
-document.getElementById("loginScreen")?.classList.add("hidden");
-document.getElementById("dashboard")?.classList.remove("hidden");
-loadCountries();
-loadBusinessProfile();
-}
-});
-
-
-// Load countries from Supabase
-async function loadCountries() {
-const { data, error } = await supabaseClient.from('countries').select('*');
-if (error) { console.error("Error loading countries:", error); return; }
-const selector = document.getElementById("countrySelector");
-selector.innerHTML = '<option value="">-- Select Country --</option>';
-data.forEach(c => {
-const option = document.createElement("option");
-option.value = c.code;
-option.textContent = `${c.name} (${c.currency})`;
-selector.appendChild(option);
-});
-}
-
-// Save country selection
-async function setUserCountry() {
-  const countryCode = document.getElementById("countrySelector").value;
-  const user = (await supabaseClient.auth.getUser()).data.user;
-  if (user) {
-    const { error } = await supabaseClient.from("profiles").upsert({
-      id: user.id,
-      country_code: countryCode
+    // Listen for login state changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        const user = session.user;
+        document.getElementById("userName").textContent = user.user_metadata.name;
+        document.getElementById("userAvatar").src = user.user_metadata.avatar_url;
+        document.getElementById("loginScreen")?.classList.add("hidden");
+        document.getElementById("dashboard")?.classList.remove("hidden");
+        loadCountries();
+        loadBusinessProfile();
+      }
     });
-    if (!error) loadDeadlines(countryCode);
-  }
-}
-</script> 
 
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="hidden">
-        <!-- Header -->
-        <header class="glass-effect shadow-lg border-b border-gray-200 sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center space-x-4">
-                        <div class="gradient-bg w-12 h-12 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-globe text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Global Accounting</h1>
-                            <p class="text-xs text-gray-500">Version 15.0 • <span id="countryFlag" class="text-lg"></span></p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <button id="notifications" class="text-gray-500 hover:text-gray-700 transition-colors relative p-2 rounded-lg hover:bg-gray-100" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
-                        </button>
-                        <div id="userInfo" class="flex items-center space-x-3">
-                            <img id="userAvatar" class="w-10 h-10 rounded-full border-2 border-blue-200" src="https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff" alt="User">
-                            <div class="hidden sm:block">
-                                <span id="userName" class="text-gray-700 font-medium block">Demo User</span>
-                                <span class="text-xs text-gray-500">Professional Plan</span>
-                            </div>
-                        </div>
-                        <button id="signOut" class="text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100" title="Sign Out">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-          <div id="businessProfile" class="glass-effect rounded-2xl p-6 mt-6 shadow-lg">
-  <h2 class="text-xl font-bold mb-4 text-gray-800">Business Profile</h2>
-  
-  <div class="mb-4">
-    <label class="block text-sm font-medium text-gray-700">Business Name</label>
-    <input type="text" id="businessName" class="w-full border-2 border-gray-300 rounded-xl py-2 px-3 focus:border-blue-500 focus:outline-none" placeholder="Enter your business name">
+    // Load countries from Supabase
+    async function loadCountries() {
+      const { data, error } = await supabaseClient.from('countries').select('*');
+      if (error) { console.error("Error loading countries:", error); return; }
+      const selector = document.getElementById("countrySelector");
+      selector.innerHTML = '<option value="">-- Select Country --</option>';
+      data.forEach(c => {
+        const option = document.createElement("option");
+        option.value = c.code;
+        option.textContent = `${c.name} (${c.currency})`;
+        selector.appendChild(option);
+      });
+    }
+
+    // Save country selection
+    async function setUserCountry() {
+      const countryCode = document.getElementById("countrySelector").value;
+      const user = (await supabaseClient.auth.getUser()).data.user;
+      if (user) {
+        const { error } = await supabaseClient.from("profiles").upsert({
+          id: user.id,
+          country_code: countryCode
+        });
+        if (!error) loadDeadlines(countryCode);
+      }
+    }
+
+    // Load deadlines with countdowns
+    async function loadDeadlines(countryCode) {
+      const { data, error } = await supabaseClient
+        .from("tax_deadlines")
+        .select("*")
+        .eq("country_code", countryCode);
+      if (error) { console.error("Error loading deadlines:", error); return; }
+      const container = document.getElementById("deadlineReminders");
+      container.innerHTML = "";
+      data.forEach(deadline => {
+        const deadlineDate = new Date(deadline.deadline_date);
+        const daysLeft = Math.ceil((deadlineDate - new Date()) / (1000*60*60*24));
+        const div = document.createElement("div");
+        div.textContent = `${deadline.deadline_type.toUpperCase()} tax deadline: ${deadlineDate.toDateString()} (${daysLeft} days left)`;
+        container.appendChild(div);
+      });
+    }
+
+    // Save business profile
+    async function saveBusinessProfile() {
+      const user = (await supabaseClient.auth.getUser()).data.user;
+      if (!user) return;
+      const businessName = document.getElementById("businessName").value;
+      const taxNumber = document.getElementById("taxNumber").value;
+      const businessType = document.getElementById("businessType").value;
+      const prefersPersonal = document.getElementById("prefersPersonal").checked;
+      const prefersBusiness = document.getElementById("prefersBusiness").checked;
+      const { error } = await supabaseClient.from("profiles").upsert({
+        id: user.id,
+        business_name: businessName,
+        tax_number: taxNumber,
+        business_type: businessType,
+        prefers_personal: prefersPersonal,
+        prefers_business: prefersBusiness
+      });
+      if (error) alert("Error saving profile");
+      else {
+        document.getElementById("profileSavedMsg").classList.remove("hidden");
+        setTimeout(() => document.getElementById("profileSavedMsg").classList.add("hidden"), 3000);
+      }
+    }
+
+    // Load business profile
+    async function loadBusinessProfile() {
+      const user = (await supabaseClient.auth.getUser()).data.user;
+      if (!user) return;
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("business_name, tax_number, business_type, prefers_personal, prefers_business")
+        .eq("id", user.id)
+        .single();
+      if (!error && data) {
+        document.getElementById("businessName").value = data.business_name || "";
+        document.getElementById("taxNumber").value = data.tax_number || "";
+        document.getElementById("businessType").value = data.business_type || "";
+        document.getElementById("prefersPersonal").checked = data.prefers_personal || false;
+        document.getElementById("prefersBusiness").checked = data.prefers_business || false;
+      }
+    }
+  </script>
+
+  <!-- UI Frameworks -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass-effect rounded-3xl shadow-2xl p-8 w-full max-w-md fade-in">
+      <div class="text-center mb-8">
+        <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bounce-in">
+          <i class="fas fa-globe text-white text-3xl"></i>
+        </div>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Global Accounting</h1>
+        <p class="text-gray-600">AI-Powered Professional Dashboard v15</p>
+      </div>
+
+      <!-- Country selector -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Your Country</label>
+        <select id="countrySelector" onchange="setUserCountry()" class="w-full border rounded-xl py-3 px-4">
+          <option value="">-- Select Country --</option>
+        </select>
+      </div>
+
+      <!-- Google login button -->
+      <button onclick="signInWithGoogle()" class="w-full gradient-bg text-white rounded-xl py-3 px-4 shadow-lg">
+        <i class="fab fa-google mr-2"></i> Sign in with Google
+      </button>
+    </div>
   </div>
-  
-  <div class="mb-4">
-    <label class="block text-sm font-medium text-gray-700">Tax Number</label>
-    <input type="text" id="taxNumber" class="w-full border-2 border-gray-300 rounded-xl py-2 px-3 focus:border-blue-500 focus:outline-none" placeholder="Enter your tax/VAT number">
+
+  <!-- Main Dashboard -->
+  <div id="dashboard" class="hidden p-6">
+    <!-- Header -->
+    <div class="flex items-center space-x-4 mb-6">
+      <img id="userAvatar" class="w-12 h-12 rounded-full" src="" alt="User Avatar">
+      <h2 id="userName" class="text-2xl font-bold"></h2>
+    </div>
+
+    <!-- Deadline Reminders -->
+    <div id="deadlineReminders" class="mb-6"></div>
+
+    <!-- Business Profile -->
+    <div id="businessProfile" class="glass-effect rounded-2xl p-6 mt-6 shadow-lg">
+      <h2 class="text-xl font-bold mb-4 text-gray-800">Business Profile</h2>
+      <input type="text" id="businessName" placeholder="Business Name" class="w-full border mb-3 p-2 rounded">
+      <input type="text" id="taxNumber" placeholder="Tax Number" class="w-full border mb-3 p-2 rounded">
+      <select id="businessType" class="w-full border mb-3 p-2 rounded">
+        <option value="">-- Select Type --</option>
+        <option value="sole_prop">Sole Proprietor</option>
+        <option value="company">Company</option>
+        <option value="partnership">Partnership</option>
+        <option value="non_profit">Non-Profit</option>
+      </select>
+
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Tax Reminder Preferences</label>
+        <label><input type="checkbox" id="prefersPersonal"> Personal Deadlines</label>
+        <label><input type="checkbox" id="prefersBusiness"> Business Deadlines</label>
+      </div>
+
+      <button onclick="saveBusinessProfile()" class="gradient-bg text-white py-2 px-6 rounded">Save Profile</button>
+      <div id="profileSavedMsg" class="text-green-600 mt-3 hidden">✅ Profile saved successfully!</div>
+    </div>
   </div>
-  
-  <div class="mb-4">
-    <label class="block text-sm font-medium text-gray-700">Business Type</label>
-    <select id="businessType" class="w-full border-2 border-gray-300 rounded-xl py-2 px-3 focus:border-blue-500 focus:outline-none">
-      <option value="">-- Select Type --</option>
-      <option value="sole_prop">Sole Proprietor</option>
-      <option value="company">Company</option>
-      <option value="partnership">Partnership</option>
-      <option value="non_profit">Non-Profit</option>
-    </select>
-  </div>
-  
-  <button onclick="saveBusinessProfile()" class="gradient-bg text-white rounded-xl py-2 px-6 shadow-lg hover:opacity-90 transition">
-    Save Profile
-  </button>
-  
-  <div id="profileSavedMsg" class="text-green-600 text-sm mt-3 hidden">
-    ✅ Profile saved successfully!
-  </div>
-</div>
-        </header>
+</body>
+</html>
 
         <!-- Navigation -->
         <nav class="glass-effect shadow-sm sticky top-16 z-30">
