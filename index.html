@@ -57,17 +57,19 @@ selector.appendChild(option);
 });
 }
 
-
 // Save country selection
 async function setUserCountry() {
-const countryCode = document.getElementById("countrySelector").value;
-const user = (await supabaseClient.auth.getUser()).data.user;
-if (user) {
-const { error } = await supabaseClient.from("profiles").upsert({
-id: user.id,
-country_code: countryCode
-});
-if (!error) loadDeadlines(countryCode);
+  const countryCode = document.getElementById("countrySelector").value;
+  const user = (await supabaseClient.auth.getUser()).data.user;
+  if (user) {
+    const { error } = await supabaseClient.from("profiles").upsert({
+      id: user.id,
+      country_code: countryCode
+    });
+    if (!error) loadDeadlines(countryCode);
+  }
+}
+</script> 
 
     <!-- Main Dashboard -->
     <div id="dashboard" class="hidden">
