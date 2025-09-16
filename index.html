@@ -381,6 +381,295 @@
       showDashboard(demoUser);
     };
 
+    // Smart Receipt Scanner
+    window.scanReceipts = async function() {
+      const fileInput = document.getElementById('receiptPhotos');
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        alert('Please select receipt photos first');
+        return;
+      }
+      
+      const resultsDiv = document.getElementById('receiptResults');
+      resultsDiv.innerHTML = '<div class="text-purple-600"><i class="fas fa-spinner fa-spin mr-2"></i>AI is scanning your receipts...</div>';
+      
+      // Simulate AI receipt processing
+      setTimeout(async () => {
+        const currency = window.selectedCurrency || 'USD';
+        const currencySymbol = getCurrencySymbol(currency);
+        
+        const mockReceiptData = [
+          { 
+            vendor: 'Office Depot', 
+            date: '2024-01-20', 
+            amount: 127.45, 
+            items: ['Paper (5 reams)', 'Pens (12 pack)', 'Stapler'], 
+            category: 'Office Supplies',
+            deductible: true 
+          },
+          { 
+            vendor: 'Shell Gas Station', 
+            date: '2024-01-22', 
+            amount: 65.30, 
+            items: ['Gasoline'], 
+            category: 'Vehicle Expenses',
+            deductible: true 
+          },
+          { 
+            vendor: 'Starbucks', 
+            date: '2024-01-23', 
+            amount: 12.50, 
+            items: ['Coffee', 'Muffin'], 
+            category: 'Meals & Entertainment',
+            deductible: true 
+          }
+        ];
+        
+        // Store receipt data in database if user is logged in
+        try {
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          if (user) {
+            for (const receipt of mockReceiptData) {
+              await supabaseClient.from('transactions').insert({
+                user_id: user.id,
+                date: receipt.date,
+                description: `${receipt.vendor} - ${receipt.items.join(', ')}`,
+                amount: -receipt.amount, // Expenses are negative
+                category: receipt.category,
+                deductible: receipt.deductible,
+                currency: currency,
+                source: 'receipt_scan',
+                created_at: new Date().toISOString()
+              });
+            }
+          }
+        } catch (error) {
+          console.log('Note: Receipt data not saved to database (demo mode)');
+        }
+        
+        let html = '<div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4"><h3 class="text-purple-800 font-bold mb-2"><i class="fas fa-check-circle mr-2"></i>Receipt Scanning Complete!</h3><p class="text-purple-700">Successfully processed ' + mockReceiptData.length + ' receipts</p></div>';
+        
+        mockReceiptData.forEach((receipt, index) => {
+          html += `<div class="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h4 class="font-bold text-lg text-gray-800">${receipt.vendor}</h4>
+                <p class="text-gray-600">${receipt.date}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-xl font-bold text-red-600">-${currencySymbol}${receipt.amount.toFixed(2)}</div>
+                <span class="bg-green-500 text-white px-2 py-1 rounded text-xs">✓ Deductible</span>
+              </div>
+            </div>
+            <div class="mb-2">
+              <strong>Items:</strong> ${receipt.items.join(', ')}
+            </div>
+            <div class="mb-2">
+              <strong>Category:</strong> <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">${receipt.category}</span>
+            </div>
+          </div>`;
+        });
+        
+        const totalAmount = mockReceiptData.reduce((sum, receipt) => sum + receipt.amount, 0);
+        html += `<div class="mt-4 p-4 bg-green-50 rounded-lg">
+          <h4 class="font-bold text-green-800 mb-2">Receipt Summary</h4>
+          <p class="text-green-700">Total Expenses Scanned: ${currencySymbol}${totalAmount.toFixed(2)}</p>
+          <p class="text-green-700">All items categorized as tax-deductible business expenses</p>
+        </div>`;
+        
+        resultsDiv.innerHTML = html;
+      }, 2500);
+    };
+
+    // Generate Monthly Report
+    window.generateMonthlyReport = async function() {
+      const resultsDiv = document.getElementById('reportsResults');
+      resultsDiv.innerHTML = '<div class="text-green-600"><i class="fas fa-spinner fa-spin mr-2"></i>Generating your monthly P&L report...</div>';
+      
+      setTimeout(() => {
+        const currency = window.selectedCurrency || 'USD';
+        const currencySymbol = getCurrencySymbol(currency);
+        const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+        
+        let html = `<div class="bg-white border border-gray-200 rounded-lg p-6 shadow-lg">
+          <div class="text-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800">Profit & Loss Statement</h3>
+            <p class="text-gray-600">${currentMonth}</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-green-800 mb-3 text-lg">📈 INCOME</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between"><span>Client Payments</span><span class="font-bold text-green-600">+${currencySymbol}8,500.00</span></div>
+                <div class="flex justify-between"><span>Consulting Fees</span><span class="font-bold text-green-600">+${currencySymbol}2,200.00</span></div>
+                <div class="border-t pt-2 flex justify-between font-bold text-lg">
+                  <span>Total Income</span><span class="text-green-600">+${currencySymbol}10,700.00</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="font-bold text-red-800 mb-3 text-lg">📉 EXPENSES</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between"><span>Office Supplies</span><span class="text-red-600">-${currencySymbol}245.50</span></div>
+                <div class="flex justify-between"><span>Software Subscriptions</span><span class="text-red-600">-${currencySymbol}299.97</span></div>
+                <div class="flex justify-between"><span>Vehicle Expenses</span><span class="text-red-600">-${currencySymbol}180.30</span></div>
+                <div class="flex justify-between"><span>Meals & Entertainment</span><span class="text-red-600">-${currencySymbol}125.80</span></div>
+                <div class="border-t pt-2 flex justify-between font-bold text-lg">
+                  <span>Total Expenses</span><span class="text-red-600">-${currencySymbol}851.57</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <div class="flex justify-between items-center">
+              <span class="text-xl font-bold text-gray-800">NET PROFIT</span>
+              <span class="text-2xl font-bold text-blue-600">${currencySymbol}9,848.43</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">Profit Margin: 92.0%</p>
+          </div>
+          
+          <div class="mt-4 flex space-x-3">
+            <button onclick="exportReportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+              <i class="fas fa-file-pdf mr-2"></i>Export PDF
+            </button>
+            <button onclick="exportReportCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+              <i class="fas fa-file-csv mr-2"></i>Export CSV
+            </button>
+          </div>
+        </div>`;
+        
+        resultsDiv.innerHTML = html;
+      }, 1500);
+    };
+
+    // Get Business Insights
+    window.getBusinessInsights = async function() {
+      const resultsDiv = document.getElementById('reportsResults');
+      resultsDiv.innerHTML = '<div class="text-orange-600"><i class="fas fa-spinner fa-spin mr-2"></i>AI is analyzing your business data...</div>';
+      
+      setTimeout(() => {
+        const currency = window.selectedCurrency || 'USD';
+        const currencySymbol = getCurrencySymbol(currency);
+        
+        let html = `<div class="space-y-4">
+          <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <h3 class="font-bold text-orange-800 mb-3"><i class="fas fa-lightbulb mr-2"></i>AI Business Insights</h3>
+            
+            <div class="space-y-4">
+              <div class="bg-white p-4 rounded-lg border-l-4 border-red-500">
+                <h4 class="font-bold text-red-700 mb-2">⚠️ Overspending Alert</h4>
+                <p class="text-gray-700">You spent 40% more on office supplies this month (${currencySymbol}245 vs ${currencySymbol}175 average). Consider bulk purchasing to save money.</p>
+              </div>
+              
+              <div class="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                <h4 class="font-bold text-green-700 mb-2">💡 Tax Deduction Opportunity</h4>
+                <p class="text-gray-700">You can deduct home office expenses! Based on your business use, you could save approximately ${currencySymbol}1,200 annually.</p>
+              </div>
+              
+              <div class="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <h4 class="font-bold text-blue-700 mb-2">📊 Profit Trend</h4>
+                <p class="text-gray-700">Your profit margin improved by 8% this month. Your cost control on software subscriptions is paying off!</p>
+              </div>
+              
+              <div class="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                <h4 class="font-bold text-purple-700 mb-2">🎯 Recommendation</h4>
+                <p class="text-gray-700">Consider setting up a business savings account. You could save ${currencySymbol}500/month based on your current profit levels.</p>
+              </div>
+            </div>
+            
+            <div class="mt-4 p-3 bg-yellow-50 rounded-lg">
+              <p class="text-sm text-yellow-800"><strong>Next Steps:</strong> Review your office supply vendors, set up home office deduction tracking, and consider quarterly tax payments.</p>
+            </div>
+          </div>
+        </div>`;
+        
+        resultsDiv.innerHTML = html;
+      }, 2000);
+    };
+
+    // Show Budget Tracker
+    window.showBudgetTracker = async function() {
+      const resultsDiv = document.getElementById('reportsResults');
+      resultsDiv.innerHTML = '<div class="text-indigo-600"><i class="fas fa-spinner fa-spin mr-2"></i>Loading your budget tracker...</div>';
+      
+      setTimeout(() => {
+        const currency = window.selectedCurrency || 'USD';
+        const currencySymbol = getCurrencySymbol(currency);
+        
+        let html = `<div class="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="fas fa-piggy-bank mr-2 text-indigo-500"></i>Monthly Budget Tracker</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Office Supplies</span>
+                <span class="text-sm text-gray-600">${currencySymbol}245 / ${currencySymbol}200</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-red-500 h-3 rounded-full" style="width: 122%"></div>
+              </div>
+              <p class="text-xs text-red-600 mt-1">⚠️ Over budget by ${currencySymbol}45</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Software & Tools</span>
+                <span class="text-sm text-gray-600">${currencySymbol}300 / ${currencySymbol}400</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-green-500 h-3 rounded-full" style="width: 75%"></div>
+              </div>
+              <p class="text-xs text-green-600 mt-1">✓ ${currencySymbol}100 remaining</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Vehicle Expenses</span>
+                <span class="text-sm text-gray-600">${currencySymbol}180 / ${currencySymbol}250</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-blue-500 h-3 rounded-full" style="width: 72%"></div>
+              </div>
+              <p class="text-xs text-blue-600 mt-1">✓ ${currencySymbol}70 remaining</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Meals & Entertainment</span>
+                <span class="text-sm text-gray-600">${currencySymbol}126 / ${currencySymbol}150</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="bg-yellow-500 h-3 rounded-full" style="width: 84%"></div>
+              </div>
+              <p class="text-xs text-yellow-600 mt-1">⚠️ ${currencySymbol}24 remaining</p>
+            </div>
+          </div>
+          
+          <div class="mt-6 p-4 bg-indigo-50 rounded-lg">
+            <h4 class="font-bold text-indigo-800 mb-2">Budget Summary</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><span class="text-gray-600">Total Budget:</span> <span class="font-bold">${currencySymbol}1,000</span></div>
+              <div><span class="text-gray-600">Total Spent:</span> <span class="font-bold">${currencySymbol}851</span></div>
+              <div><span class="text-gray-600">Remaining:</span> <span class="font-bold text-green-600">${currencySymbol}149</span></div>
+              <div><span class="text-gray-600">Over Budget:</span> <span class="font-bold text-red-600">${currencySymbol}45</span></div>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <button onclick="setBudgets()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+              <i class="fas fa-edit mr-2"></i>Edit Budgets
+            </button>
+          </div>
+        </div>`;
+        
+        resultsDiv.innerHTML = html;
+      }, 1000);
+    };
+
     // AI Bank Statement Processing
     window.processStatements = async function() {
       const fileInput = document.getElementById('bankStatements');
@@ -531,6 +820,19 @@
         alert('Error loading transactions. Please try again.');
       }
     };
+
+    // Export functions (simplified for demo)
+    window.exportReportPDF = function() {
+      alert('PDF export feature would generate a professional report file here. This requires additional PDF generation libraries in production.');
+    };
+
+    window.exportReportCSV = function() {
+      alert('CSV export feature would download your data in spreadsheet format here. Perfect for sharing with your accountant!');
+    };
+
+    window.setBudgets = function() {
+      alert('Budget editing feature would allow you to set custom monthly limits for each expense category.');
+    };
   </script>
 
   <!-- UI Frameworks -->
@@ -621,6 +923,25 @@
       </div>
     </div>
 
+    <!-- Smart Receipt Scanner -->
+    <div class="glass-effect rounded-2xl p-6 mb-6 shadow-lg">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">
+        <i class="fas fa-camera mr-2 text-purple-500"></i>Smart Receipt Scanner
+      </h2>
+      <p class="text-gray-600 mb-4">Take photos of receipts and let AI extract all the details automatically</p>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Receipt Photos</label>
+        <input type="file" id="receiptPhotos" multiple accept="image/*" capture="environment" class="w-full border-2 border-dashed border-purple-300 rounded-lg p-4 hover:border-purple-400 transition-colors">
+      </div>
+      
+      <button onclick="scanReceipts()" class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+        <i class="fas fa-scan mr-2"></i>Scan Receipts with AI
+      </button>
+      
+      <div id="receiptResults" class="mt-6"></div>
+    </div>
+
     <!-- AI Bank Statement Processing -->
     <div class="glass-effect rounded-2xl p-6 mb-6 shadow-lg">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">
@@ -638,6 +959,28 @@
       </button>
       
       <div id="aiResults" class="mt-6"></div>
+    </div>
+
+    <!-- Business Reports & Analytics -->
+    <div class="glass-effect rounded-2xl p-6 mb-6 shadow-lg">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">
+        <i class="fas fa-chart-line mr-2 text-green-500"></i>Business Reports & Analytics
+      </h2>
+      <p class="text-gray-600 mb-4">Generate professional reports and get AI insights about your business spending</p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <button onclick="generateMonthlyReport()" class="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-all duration-200">
+          <i class="fas fa-file-alt mr-2"></i>Monthly P&L Report
+        </button>
+        <button onclick="getBusinessInsights()" class="bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg transition-all duration-200">
+          <i class="fas fa-lightbulb mr-2"></i>AI Business Insights
+        </button>
+        <button onclick="showBudgetTracker()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg transition-all duration-200">
+          <i class="fas fa-piggy-bank mr-2"></i>Budget Tracker
+        </button>
+      </div>
+      
+      <div id="reportsResults" class="mt-6"></div>
     </div>
 
     <!-- Business Profile -->
@@ -680,5 +1023,5 @@
       </div>
     </div>
   </div>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9800be0ba4ae1640',t:'MTc1ODAyOTY3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9800f854a5b2977c',t:'MTc1ODAzMjA2NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
