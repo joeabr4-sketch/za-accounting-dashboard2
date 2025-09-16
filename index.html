@@ -198,6 +198,38 @@
                     </div>
                 </div>
             </div>
+          <div id="businessProfile" class="glass-effect rounded-2xl p-6 mt-6 shadow-lg">
+  <h2 class="text-xl font-bold mb-4 text-gray-800">Business Profile</h2>
+  
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700">Business Name</label>
+    <input type="text" id="businessName" class="w-full border-2 border-gray-300 rounded-xl py-2 px-3 focus:border-blue-500 focus:outline-none" placeholder="Enter your business name">
+  </div>
+  
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700">Tax Number</label>
+    <input type="text" id="taxNumber" class="w-full border-2 border-gray-300 rounded-xl py-2 px-3 focus:border-blue-500 focus:outline-none" placeholder="Enter your tax/VAT number">
+  </div>
+  
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700">Business Type</label>
+    <select id="businessType" class="w-full border-2 border-gray-300 rounded-xl py-2 px-3 focus:border-blue-500 focus:outline-none">
+      <option value="">-- Select Type --</option>
+      <option value="sole_prop">Sole Proprietor</option>
+      <option value="company">Company</option>
+      <option value="partnership">Partnership</option>
+      <option value="non_profit">Non-Profit</option>
+    </select>
+  </div>
+  
+  <button onclick="saveBusinessProfile()" class="gradient-bg text-white rounded-xl py-2 px-6 shadow-lg hover:opacity-90 transition">
+    Save Profile
+  </button>
+  
+  <div id="profileSavedMsg" class="text-green-600 text-sm mt-3 hidden">
+    ✅ Profile saved successfully!
+  </div>
+</div>
         </header>
 
         <!-- Navigation -->
