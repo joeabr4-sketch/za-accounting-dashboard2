@@ -1,214 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accounting Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Accounting Dashboard</title>
 
-  <!-- Supabase client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    // Initialize Supabase client
-    const supabaseClient = supabase.createClient(
-      "https://ehpjupxbworwiepbuxkn.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0" // full anon key
-    );
 
-    // Save business profile
-async function saveBusinessProfile() {
-  const user = (await supabaseClient.auth.getUser()).data.user;
-  if (!user) return;
+<!-- Supabase client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+// Initialize Supabase client
+const supabaseClient = supabase.createClient(
+"https://ehpjupxbworwiepbuxkn.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0"
+);
 
-  const businessName = document.getElementById("businessName").value;
-  const taxNumber = document.getElementById("taxNumber").value;
-  const businessType = document.getElementById("businessType").value;
 
-  const { error } = await supabaseClient.from("profiles").upsert({
-    id: user.id,
-    business_name: businessName,
-    tax_number: taxNumber,
-    business_type: businessType
-  });
+// Google login
+window.signInWithGoogle = async function () {
+const { error } = await supabaseClient.auth.signInWithOAuth({
+provider: 'google',
+options: { redirectTo: "https://za-accounting-dashboard2.vercel.app" }
+});
+if (error) {
+console.error("Google login error:", error);
+alert("Sign-in error: " + error.message);
+}
+};
 
-  if (error) {
-    console.error("Error saving profile:", error);
-    alert("Error saving profile");
-  } else {
-    document.getElementById("profileSavedMsg").classList.remove("hidden");
-    setTimeout(() => {
-      document.getElementById("profileSavedMsg").classList.add("hidden");
-    }, 3000);
-  }
+
+// Listen for login state changes
+supabaseClient.auth.onAuthStateChange((event, session) => {
+if (session) {
+const user = session.user;
+document.getElementById("userName").textContent = user.user_metadata.name;
+document.getElementById("userAvatar").src = user.user_metadata.avatar_url;
+document.getElementById("loginScreen")?.classList.add("hidden");
+document.getElementById("dashboard")?.classList.remove("hidden");
+loadCountries();
+loadBusinessProfile();
+}
+});
+
+
+// Load countries from Supabase
+async function loadCountries() {
+const { data, error } = await supabaseClient.from('countries').select('*');
+if (error) { console.error("Error loading countries:", error); return; }
+const selector = document.getElementById("countrySelector");
+selector.innerHTML = '<option value="">-- Select Country --</option>';
+data.forEach(c => {
+const option = document.createElement("option");
+option.value = c.code;
+option.textContent = `${c.name} (${c.currency})`;
+selector.appendChild(option);
+});
 }
 
-// Load profile into form on login
-async function loadBusinessProfile() {
-  const user = (await supabaseClient.auth.getUser()).data.user;
-  if (!user) return;
 
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("business_name, tax_number, business_type")
-    .eq("id", user.id)
-    .single();
-
-  if (!error && data) {
-    document.getElementById("businessName").value = data.business_name || "";
-    document.getElementById("taxNumber").value = data.tax_number || "";
-    document.getElementById("businessType").value = data.business_type || "";
-  }
-}
-
-    // Google login
-    window.signInWithGoogle = async function () {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: "https://za-accounting-dashboard2.vercel.app"
-        }
-      });
-      if (error) {
-        console.error("Google login error:", error);
-        alert("Sign-in error: " + error.message);
-      }
-    };
-
-    // Listen for login state changes
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        const user = session.user;
-        document.getElementById("userName").textContent = user.user_metadata.name;
-        document.getElementById("userAvatar").src = user.user_metadata.avatar_url;
-        document.getElementById("loginScreen")?.classList.add("hidden");
-        document.getElementById("dashboard")?.classList.remove("hidden");
-
-        if (session) {
-  const user = session.user;
-
-  // Upsert profile with Google metadata
-  await supabaseClient.from("profiles").upsert({
-    id: user.id,
-    full_name: user.user_metadata.full_name,
-    avatar_url: user.user_metadata.avatar_url
-  });
-}
-
-        // load countries when dashboard is visible
-        loadCountries();
-      }
-    });
-
-    // Load countries into selector
-    async function loadCountries() {
-      const { data, error } = await supabaseClient.from('countries').select('*');
-      if (error) {
-        console.error("Error loading countries:", error);
-        return;
-      }
-      const selector = document.getElementById("countrySelector");
-      selector.innerHTML = "<option value=''>-- Select Country --</option>";
-      data.forEach(c => {
-        const option = document.createElement("option");
-        option.value = c.code;
-        option.textContent = `${c.name} (${c.currency})`;
-        selector.appendChild(option);
-      });
-    }
-
-    // Save user’s country selection
-    async function setUserCountry() {
-      const countryCode = document.getElementById("countrySelector").value;
-      const user = (await supabaseClient.auth.getUser()).data.user;
-
-      if (user) {
-        const { error } = await supabaseClient.from("profiles").upsert({
-          id: user.id,
-          country_code: countryCode
-        });
-        if (error) console.error("Error saving country:", error);
-        else loadDeadlines(countryCode);
-      }
-    }
-
-    // Load deadlines & show countdowns
-    async function loadDeadlines(countryCode) {
-      const { data, error } = await supabaseClient
-        .from("tax_deadlines")
-        .select("*")
-        .eq("country_code", countryCode);
-
-      if (error) {
-        console.error("Error loading deadlines:", error);
-        return;
-      }
-
-      const container = document.getElementById("deadlineReminders");
-      container.innerHTML = "";
-
-      data.forEach(deadline => {
-        const deadlineDate = new Date(deadline.deadline_date);
-        const now = new Date();
-        const diff = deadlineDate - now;
-        const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-        const div = document.createElement("div");
-        div.textContent = `${deadline.deadline_type.toUpperCase()} tax deadline: ${deadlineDate.toDateString()} (${daysLeft} days left)`;
-        container.appendChild(div);
-      });
-    }
-  </script>
-</head>    
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Accounting Dashboard v15</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-      /* your CSS untouched */
-    </style>
-</head>
-<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
-    <!-- Login Screen -->
-    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="glass-effect rounded-3xl shadow-2xl p-8 w-full max-w-md fade-in">
-            <div class="text-center mb-8">
-                <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bounce-in">
-                    <i class="fas fa-globe text-white text-3xl"></i>
-                </div>
-                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Global Accounting</h1>
-                <p class="text-gray-600">AI-Powered Professional Dashboard v15</p>
-                <div class="flex items-center justify-center space-x-2 mt-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-xs text-green-600 font-medium">Live System</span>
-                </div>
-            </div>
-            
-            <!-- Country selector -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Select Your Country</label>
-                <select id="countrySelector" onchange="setUserCountry()" class="w-full border-2 border-gray-300 rounded-xl py-3 px-4 focus:border-blue-500 focus:outline-none transition-all duration-200">
-                    <option value="">-- Select Country --</option>
-                </select>
-            </div>
-
-            <!-- Deadline reminders -->
-            <div id="deadlineReminders" class="text-sm text-gray-700 mb-4"></div>
-            
-            <!-- Existing login form -->
-            <form id="loginForm" class="space-y-4">
-              <!-- email + password -->
-            </form>
-            
-            <button onclick="signInWithGoogle()" 
-              class="mt-6 w-full gradient-bg text-white rounded-xl py-3 px-4 hover:opacity-90 transition-all duration-200 font-medium shadow-lg">
-              <i class="fab fa-google mr-2"></i> Sign in with Google
-            </button>
-        </div>
-    </div>
+// Save country selection
+async function setUserCountry() {
+const countryCode = document.getElementById("countrySelector").value;
+const user = (await supabaseClient.auth.getUser()).data.user;
+if (user) {
+const { error } = await supabaseClient.from("profiles").upsert({
+id: user.id,
+country_code: countryCode
+});
+if (!error) loadDeadlines(countryCode);
+</html>
 
     <!-- Main Dashboard -->
     <div id="dashboard" class="hidden">
