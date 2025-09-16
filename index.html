@@ -50,6 +50,24 @@
     document.addEventListener('DOMContentLoaded', async function() {
       loadCountries(); // Always load countries first
       
+      // Restore saved country selection from localStorage
+      const savedCountry = localStorage.getItem('selectedCountry');
+      const savedCurrency = localStorage.getItem('selectedCurrency');
+      
+      if (savedCountry && savedCurrency) {
+        // Wait for countries to load, then set the selection
+        setTimeout(() => {
+          const countrySelector = document.getElementById("countrySelector");
+          if (countrySelector) {
+            countrySelector.value = savedCountry;
+            window.selectedCurrency = savedCurrency;
+            updateCurrencyDisplay(savedCurrency);
+            loadDeadlines(savedCountry);
+            console.log("Restored country:", savedCountry, "Currency:", savedCurrency);
+          }
+        }, 500);
+      }
+      
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
         showDashboard(session.user);
@@ -70,6 +88,17 @@
       document.getElementById("userAvatar").src = user.user_metadata?.avatar_url || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23e5e7eb"/><text x="50" y="55" text-anchor="middle" font-size="40" fill="%236b7280">👤</text></svg>';
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("dashboard").classList.remove("hidden");
+      
+      // Restore currency settings after login
+      const savedCountry = localStorage.getItem('selectedCountry');
+      const savedCurrency = localStorage.getItem('selectedCurrency');
+      
+      if (savedCountry && savedCurrency) {
+        window.selectedCurrency = savedCurrency;
+        updateCurrencyDisplay(savedCurrency);
+        console.log("Currency restored after login:", savedCurrency);
+      }
+      
       loadBusinessProfile();
       startDeadlineCountdown();
     }
@@ -136,6 +165,10 @@
       const selectedOption = document.getElementById("countrySelector").selectedOptions[0];
       const currencyMatch = selectedOption.textContent.match(/\(([^)]+)\)/);
       const currency = currencyMatch ? currencyMatch[1] : 'USD';
+      
+      // Store in localStorage for persistence across login
+      localStorage.setItem('selectedCountry', countryCode);
+      localStorage.setItem('selectedCurrency', currency);
       
       // Update currency display
       updateCurrencyDisplay(currency);
@@ -535,8 +568,9 @@
       
       // Simulate AI receipt processing
       setTimeout(async () => {
-        const currency = window.selectedCurrency || 'USD';
+        const currency = localStorage.getItem('selectedCurrency') || window.selectedCurrency || 'USD';
         const currencySymbol = getCurrencySymbol(currency);
+        console.log("Processing receipts with currency:", currency);
         
         // Get receipt amounts based on selected currency
         const receiptAmounts = {
@@ -642,9 +676,10 @@
       resultsDiv.innerHTML = '<div class="text-green-600"><i class="fas fa-spinner fa-spin mr-2"></i>Generating your monthly P&L report...</div>';
       
       setTimeout(() => {
-        const currency = window.selectedCurrency || 'USD';
+        const currency = localStorage.getItem('selectedCurrency') || window.selectedCurrency || 'USD';
         const currencySymbol = getCurrencySymbol(currency);
         const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+        console.log("Generating report with currency:", currency);
         
         // Get report amounts based on selected currency
         const reportAmounts = {
@@ -876,8 +911,10 @@
       
       // Simulate AI processing
       setTimeout(async () => {
-        const currency = window.selectedCurrency || 'USD';
+        // Get currency from localStorage first, then fallback to window variable
+        const currency = localStorage.getItem('selectedCurrency') || window.selectedCurrency || 'USD';
         const currencySymbol = getCurrencySymbol(currency);
+        console.log("Processing bank statements with currency:", currency);
         
         // Get currency amounts based on selected country
         const baseAmounts = {
@@ -903,8 +940,9 @@
         ];
         
         // Apply country-specific tax rules
-        const countryCode = document.getElementById("countrySelector").value;
+        const countryCode = localStorage.getItem('selectedCountry') || document.getElementById("countrySelector").value || 'US';
         const processedResults = applyCountryTaxRules(mockResults, countryCode, currency);
+        console.log("Applying tax rules for country:", countryCode);
         
         // Store results in database if user is logged in
         try {
@@ -1310,5 +1348,5 @@
       </div>
     </div>
   </div>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98011c5187f63f1f',t:'MTc1ODAzMzUzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98012930b5ab06db',t:'MTc1ODAzNDA2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
