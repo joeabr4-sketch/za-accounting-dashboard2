@@ -60,21 +60,48 @@
       }
     });
 
-    // Load countries from Supabase
+    // Load countries from Supabase or use fallback
     async function loadCountries() {
       try {
         const { data, error } = await supabaseClient.from('countries').select('*');
-        if (error) { console.error("Error loading countries:", error); return; }
         const selector = document.getElementById("countrySelector");
         selector.innerHTML = '<option value="">-- Select Country --</option>';
-        data.forEach(c => {
-          const option = document.createElement("option");
-          option.value = c.code;
-          option.textContent = `${c.name} (${c.currency})`;
-          selector.appendChild(option);
-        });
+        
+        if (error || !data || data.length === 0) {
+          console.log("Using fallback countries list");
+          // Fallback countries list
+          const fallbackCountries = [
+            { code: 'US', name: 'United States', currency: 'USD' },
+            { code: 'CA', name: 'Canada', currency: 'CAD' },
+            { code: 'GB', name: 'United Kingdom', currency: 'GBP' },
+            { code: 'AU', name: 'Australia', currency: 'AUD' },
+            { code: 'ZA', name: 'South Africa', currency: 'ZAR' },
+            { code: 'DE', name: 'Germany', currency: 'EUR' },
+            { code: 'FR', name: 'France', currency: 'EUR' },
+            { code: 'JP', name: 'Japan', currency: 'JPY' },
+            { code: 'IN', name: 'India', currency: 'INR' },
+            { code: 'BR', name: 'Brazil', currency: 'BRL' }
+          ];
+          
+          fallbackCountries.forEach(c => {
+            const option = document.createElement("option");
+            option.value = c.code;
+            option.textContent = `${c.name} (${c.currency})`;
+            selector.appendChild(option);
+          });
+        } else {
+          data.forEach(c => {
+            const option = document.createElement("option");
+            option.value = c.code;
+            option.textContent = `${c.name} (${c.currency})`;
+            selector.appendChild(option);
+          });
+        }
       } catch (err) {
         console.error("Failed to load countries:", err);
+        // Show error message to user
+        const selector = document.getElementById("countrySelector");
+        selector.innerHTML = '<option value="">Error loading countries - please refresh</option>';
       }
     }
 
@@ -98,26 +125,62 @@
           .from("tax_deadlines")
           .select("*")
           .eq("country_code", countryCode);
-        if (error) { console.error("Error loading deadlines:", error); return; }
         
         const container = document.getElementById("deadlineReminders");
         container.innerHTML = "";
         
-        if (data.length === 0) {
-          container.innerHTML = '<div class="text-gray-500 text-center py-4">No tax deadlines found for selected country</div>';
-          return;
+        let deadlines = [];
+        
+        if (error || !data || data.length === 0) {
+          console.log("Using sample deadlines for", countryCode);
+          // Sample deadlines based on country
+          const sampleDeadlines = {
+            'US': [
+              { id: 1, deadline_type: 'Individual Tax Return', deadline_date: '2024-04-15' },
+              { id: 2, deadline_type: 'Quarterly Estimated Tax', deadline_date: '2024-06-15' }
+            ],
+            'CA': [
+              { id: 3, deadline_type: 'Individual Tax Return', deadline_date: '2024-04-30' },
+              { id: 4, deadline_type: 'Corporate Tax Return', deadline_date: '2024-06-30' }
+            ],
+            'GB': [
+              { id: 5, deadline_type: 'Self Assessment', deadline_date: '2024-01-31' },
+              { id: 6, deadline_type: 'Corporation Tax', deadline_date: '2024-12-31' }
+            ],
+            'AU': [
+              { id: 7, deadline_type: 'Individual Tax Return', deadline_date: '2024-10-31' },
+              { id: 8, deadline_type: 'BAS Statement', deadline_date: '2024-07-28' }
+            ],
+            'ZA': [
+              { id: 9, deadline_type: 'Individual Tax Return', deadline_date: '2024-11-30' },
+              { id: 10, deadline_type: 'Provisional Tax', deadline_date: '2024-08-31' }
+            ]
+          };
+          
+          deadlines = sampleDeadlines[countryCode] || [
+            { id: 99, deadline_type: 'Tax Return', deadline_date: '2024-12-31' }
+          ];
+        } else {
+          deadlines = data;
         }
 
-        data.forEach(deadline => {
+        deadlines.forEach(deadline => {
           const div = document.createElement("div");
           div.className = "bg-gradient-to-r from-red-500 to-orange-500 text-white p-4 rounded-xl mb-3 shadow-lg";
           div.id = `deadline-${deadline.id}`;
           container.appendChild(div);
         });
         
-        updateDeadlineCountdowns(data);
+        updateDeadlineCountdowns(deadlines);
+        
+        // Clear existing interval and start new one
+        if (deadlineInterval) clearInterval(deadlineInterval);
+        deadlineInterval = setInterval(() => updateDeadlineCountdowns(deadlines), 60000);
+        
       } catch (err) {
         console.error("Failed to load deadlines:", err);
+        const container = document.getElementById("deadlineReminders");
+        container.innerHTML = '<div class="text-red-500 text-center py-4">Error loading deadlines - please try again</div>';
       }
     }
 
@@ -425,9 +488,8 @@
       </div>
     </div>
   </div>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9800a0c023370704',t:'MTc1ODAyODQ3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
-        <!-- Navigation -->
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9800a67e63ba0704',t:'MTc1ODAyODcxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>        <!-- Navigation -->
         <nav class="glass-effect shadow-sm sticky top-16 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex space-x-8 overflow-x-auto">
