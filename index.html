@@ -14,15 +14,35 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocGp1cHhid29yd2llcGJ1eGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4Mzg5MTQsImV4cCI6MjA2OTQxNDkxNH0.uLGrwVrYn2hk_H5h40H731BvbwIRJPmt_AZTUFbtxH0"
     );
 
+    let deadlineInterval;
+
     // Google login
     window.signInWithGoogle = async function () {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: "https://za-accounting-dashboard2.vercel.app" }
-      });
+      try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: "https://za-accounting-dashboard2.vercel.app" }
+        });
+        if (error) {
+          console.error("Google login error:", error);
+          alert("Sign-in error: " + error.message);
+        }
+      } catch (err) {
+        console.error("Login failed:", err);
+        alert("Login failed. Please try again.");
+      }
+    };
+
+    // Sign out function
+    window.signOut = async function () {
+      const { error } = await supabaseClient.auth.signOut();
       if (error) {
-        console.error("Google login error:", error);
-        alert("Sign-in error: " + error.message);
+        console.error("Sign out error:", error);
+        alert("Sign out error: " + error.message);
+      } else {
+        document.getElementById("loginScreen").classList.remove("hidden");
+        document.getElementById("dashboard").classList.add("hidden");
+        if (deadlineInterval) clearInterval(deadlineInterval);
       }
     };
 
@@ -30,27 +50,32 @@
     supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
         const user = session.user;
-        document.getElementById("userName").textContent = user.user_metadata.name;
-        document.getElementById("userAvatar").src = user.user_metadata.avatar_url;
+        document.getElementById("userName").textContent = user.user_metadata.name || user.email;
+        document.getElementById("userAvatar").src = user.user_metadata.avatar_url || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23e5e7eb"/><text x="50" y="55" text-anchor="middle" font-size="40" fill="%236b7280">👤</text></svg>';
         document.getElementById("loginScreen")?.classList.add("hidden");
         document.getElementById("dashboard")?.classList.remove("hidden");
         loadCountries();
         loadBusinessProfile();
+        startDeadlineCountdown();
       }
     });
 
     // Load countries from Supabase
     async function loadCountries() {
-      const { data, error } = await supabaseClient.from('countries').select('*');
-      if (error) { console.error("Error loading countries:", error); return; }
-      const selector = document.getElementById("countrySelector");
-      selector.innerHTML = '<option value="">-- Select Country --</option>';
-      data.forEach(c => {
-        const option = document.createElement("option");
-        option.value = c.code;
-        option.textContent = `${c.name} (${c.currency})`;
-        selector.appendChild(option);
-      });
+      try {
+        const { data, error } = await supabaseClient.from('countries').select('*');
+        if (error) { console.error("Error loading countries:", error); return; }
+        const selector = document.getElementById("countrySelector");
+        selector.innerHTML = '<option value="">-- Select Country --</option>';
+        data.forEach(c => {
+          const option = document.createElement("option");
+          option.value = c.code;
+          option.textContent = `${c.name} (${c.currency})`;
+          selector.appendChild(option);
+        });
+      } catch (err) {
+        console.error("Failed to load countries:", err);
+      }
     }
 
     // Save country selection
@@ -66,22 +91,101 @@
       }
     }
 
-    // Load deadlines with countdowns
+    // Load deadlines with live countdowns
     async function loadDeadlines(countryCode) {
-      const { data, error } = await supabaseClient
-        .from("tax_deadlines")
-        .select("*")
-        .eq("country_code", countryCode);
-      if (error) { console.error("Error loading deadlines:", error); return; }
-      const container = document.getElementById("deadlineReminders");
-      container.innerHTML = "";
-      data.forEach(deadline => {
+      try {
+        const { data, error } = await supabaseClient
+          .from("tax_deadlines")
+          .select("*")
+          .eq("country_code", countryCode);
+        if (error) { console.error("Error loading deadlines:", error); return; }
+        
+        const container = document.getElementById("deadlineReminders");
+        container.innerHTML = "";
+        
+        if (data.length === 0) {
+          container.innerHTML = '<div class="text-gray-500 text-center py-4">No tax deadlines found for selected country</div>';
+          return;
+        }
+
+        data.forEach(deadline => {
+          const div = document.createElement("div");
+          div.className = "bg-gradient-to-r from-red-500 to-orange-500 text-white p-4 rounded-xl mb-3 shadow-lg";
+          div.id = `deadline-${deadline.id}`;
+          container.appendChild(div);
+        });
+        
+        updateDeadlineCountdowns(data);
+      } catch (err) {
+        console.error("Failed to load deadlines:", err);
+      }
+    }
+
+    // Update deadline countdowns
+    function updateDeadlineCountdowns(deadlines) {
+      deadlines.forEach(deadline => {
         const deadlineDate = new Date(deadline.deadline_date);
-        const daysLeft = Math.ceil((deadlineDate - new Date()) / (1000*60*60*24));
-        const div = document.createElement("div");
-        div.textContent = `${deadline.deadline_type.toUpperCase()} tax deadline: ${deadlineDate.toDateString()} (${daysLeft} days left)`;
-        container.appendChild(div);
+        const now = new Date();
+        const timeDiff = deadlineDate - now;
+        
+        const div = document.getElementById(`deadline-${deadline.id}`);
+        if (!div) return;
+        
+        if (timeDiff <= 0) {
+          div.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-lg">${deadline.deadline_type.toUpperCase()} TAX DEADLINE</h3>
+                <p class="text-red-200">⚠️ OVERDUE - ${deadlineDate.toDateString()}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold">OVERDUE</div>
+              </div>
+            </div>
+          `;
+        } else {
+          const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+          
+          div.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-lg">${deadline.deadline_type.toUpperCase()} TAX DEADLINE</h3>
+                <p class="text-orange-100">${deadlineDate.toDateString()}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold">${days}d ${hours}h ${minutes}m</div>
+                <div class="text-sm text-orange-200">remaining</div>
+              </div>
+            </div>
+          `;
+        }
       });
+    }
+
+    // Start deadline countdown timer
+    async function startDeadlineCountdown() {
+      const user = (await supabaseClient.auth.getUser()).data.user;
+      if (!user) return;
+      
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("country_code")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile?.country_code) {
+        const { data: deadlines } = await supabaseClient
+          .from("tax_deadlines")
+          .select("*")
+          .eq("country_code", profile.country_code);
+        
+        if (deadlines) {
+          updateDeadlineCountdowns(deadlines);
+          deadlineInterval = setInterval(() => updateDeadlineCountdowns(deadlines), 60000); // Update every minute
+        }
+      }
     }
 
     // Save business profile
@@ -125,12 +229,86 @@
         document.getElementById("prefersBusiness").checked = data.prefers_business || false;
       }
     }
+
+    // AI Bank Statement Processing
+    window.processStatements = function() {
+      const fileInput = document.getElementById('bankStatements');
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        alert('Please select bank statement files first');
+        return;
+      }
+      
+      const resultsDiv = document.getElementById('aiResults');
+      resultsDiv.innerHTML = '<div class="text-blue-600"><i class="fas fa-spinner fa-spin mr-2"></i>AI is processing your statements...</div>';
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        const mockResults = [
+          { date: '2024-01-15', description: 'Office Supplies Store', amount: -245.50, category: 'Office Expenses', deductible: true },
+          { date: '2024-01-18', description: 'Client Payment - ABC Corp', amount: 2500.00, category: 'Business Income', deductible: false },
+          { date: '2024-01-22', description: 'Business Lunch - Restaurant', amount: -85.30, category: 'Meals & Entertainment', deductible: true },
+          { date: '2024-01-25', description: 'Software Subscription', amount: -99.99, category: 'Software/Technology', deductible: true },
+          { date: '2024-01-28', description: 'Personal Grocery Shopping', amount: -156.78, category: 'Personal Expense', deductible: false }
+        ];
+        
+        let html = '<div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4"><h3 class="text-green-800 font-bold mb-2"><i class="fas fa-check-circle mr-2"></i>AI Processing Complete!</h3><p class="text-green-700">Found ' + mockResults.length + ' transactions. Tax-deductible items highlighted.</p></div>';
+        
+        html += '<div class="overflow-x-auto"><table class="w-full border-collapse border border-gray-300">';
+        html += '<thead><tr class="bg-gray-100"><th class="border border-gray-300 p-2">Date</th><th class="border border-gray-300 p-2">Description</th><th class="border border-gray-300 p-2">Amount</th><th class="border border-gray-300 p-2">Category</th><th class="border border-gray-300 p-2">Tax Status</th></tr></thead><tbody>';
+        
+        mockResults.forEach(item => {
+          const rowClass = item.deductible ? 'bg-green-50' : 'bg-gray-50';
+          const statusBadge = item.deductible ? '<span class="bg-green-500 text-white px-2 py-1 rounded text-xs">✓ Deductible</span>' : '<span class="bg-gray-500 text-white px-2 py-1 rounded text-xs">Personal</span>';
+          html += `<tr class="${rowClass}">
+            <td class="border border-gray-300 p-2">${item.date}</td>
+            <td class="border border-gray-300 p-2">${item.description}</td>
+            <td class="border border-gray-300 p-2 ${item.amount < 0 ? 'text-red-600' : 'text-green-600'}">${item.amount < 0 ? '-' : '+'}$${Math.abs(item.amount).toFixed(2)}</td>
+            <td class="border border-gray-300 p-2">${item.category}</td>
+            <td class="border border-gray-300 p-2">${statusBadge}</td>
+          </tr>`;
+        });
+        
+        html += '</tbody></table></div>';
+        html += '<div class="mt-4 p-4 bg-blue-50 rounded-lg"><h4 class="font-bold text-blue-800 mb-2">Tax Summary</h4><p class="text-blue-700">Total Deductible Expenses: $430.79</p><p class="text-blue-700">Business Income: $2,500.00</p></div>';
+        
+        resultsDiv.innerHTML = html;
+      }, 2000);
+    };
   </script>
 
   <!-- UI Frameworks -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    .bounce-in {
+      animation: bounceIn 1s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 
 <body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
@@ -149,13 +327,13 @@
       <!-- Country selector -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Select Your Country</label>
-        <select id="countrySelector" onchange="setUserCountry()" class="w-full border rounded-xl py-3 px-4">
+        <select id="countrySelector" onchange="setUserCountry()" class="w-full border rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
           <option value="">-- Select Country --</option>
         </select>
       </div>
 
       <!-- Google login button -->
-      <button onclick="signInWithGoogle()" class="w-full gradient-bg text-white rounded-xl py-3 px-4 shadow-lg">
+      <button onclick="signInWithGoogle()" class="w-full gradient-bg text-white rounded-xl py-3 px-4 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
         <i class="fab fa-google mr-2"></i> Sign in with Google
       </button>
     </div>
@@ -163,41 +341,92 @@
 
   <!-- Main Dashboard -->
   <div id="dashboard" class="hidden p-6">
-    <!-- Header -->
-    <div class="flex items-center space-x-4 mb-6">
-      <img id="userAvatar" class="w-12 h-12 rounded-full" src="" alt="User Avatar">
-      <h2 id="userName" class="text-2xl font-bold"></h2>
+    <!-- Header with Sign Out -->
+    <div class="flex items-center justify-between mb-6 bg-white rounded-2xl p-4 shadow-lg">
+      <div class="flex items-center space-x-4">
+        <img id="userAvatar" class="w-12 h-12 rounded-full border-2 border-blue-500" src="" alt="User Avatar">
+        <div>
+          <h2 id="userName" class="text-2xl font-bold text-gray-800"></h2>
+          <p class="text-gray-600">Welcome back!</p>
+        </div>
+      </div>
+      <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+        <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+      </button>
     </div>
 
     <!-- Deadline Reminders -->
-    <div id="deadlineReminders" class="mb-6"></div>
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4"><i class="fas fa-clock mr-2 text-orange-500"></i>Tax Deadline Timers</h2>
+      <div id="deadlineReminders" class="space-y-3">
+        <div class="text-gray-500 text-center py-8 bg-white rounded-xl">
+          <i class="fas fa-calendar-alt text-4xl mb-4 text-gray-300"></i>
+          <p>Select your country to see tax deadlines with live countdowns</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Bank Statement Processing -->
+    <div class="glass-effect rounded-2xl p-6 mb-6 shadow-lg">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">
+        <i class="fas fa-robot mr-2 text-blue-500"></i>AI Bank Statement Processor
+      </h2>
+      <p class="text-gray-600 mb-4">Upload your bank statements and let AI automatically categorize transactions for tax compliance</p>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bank Statements (CSV, PDF, Excel)</label>
+        <input type="file" id="bankStatements" multiple accept=".csv,.pdf,.xlsx,.xls" class="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
+      </div>
+      
+      <button onclick="processStatements()" class="gradient-bg text-white py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+        <i class="fas fa-magic mr-2"></i>Process with AI
+      </button>
+      
+      <div id="aiResults" class="mt-6"></div>
+    </div>
 
     <!-- Business Profile -->
-    <div id="businessProfile" class="glass-effect rounded-2xl p-6 mt-6 shadow-lg">
-      <h2 class="text-xl font-bold mb-4 text-gray-800">Business Profile</h2>
-      <input type="text" id="businessName" placeholder="Business Name" class="w-full border mb-3 p-2 rounded">
-      <input type="text" id="taxNumber" placeholder="Tax Number" class="w-full border mb-3 p-2 rounded">
-      <select id="businessType" class="w-full border mb-3 p-2 rounded">
-        <option value="">-- Select Type --</option>
+    <div class="glass-effect rounded-2xl p-6 shadow-lg">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">
+        <i class="fas fa-building mr-2 text-green-500"></i>Business Profile
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" id="businessName" placeholder="Business Name" class="border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <input type="text" id="taxNumber" placeholder="Tax Number" class="border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <select id="businessType" class="w-full border rounded-lg p-3 mt-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <option value="">-- Select Business Type --</option>
         <option value="sole_prop">Sole Proprietor</option>
         <option value="company">Company</option>
         <option value="partnership">Partnership</option>
         <option value="non_profit">Non-Profit</option>
       </select>
 
-      <div class="mb-3">
-        <label class="block text-sm font-medium">Tax Reminder Preferences</label>
-        <label><input type="checkbox" id="prefersPersonal"> Personal Deadlines</label>
-        <label><input type="checkbox" id="prefersBusiness"> Business Deadlines</label>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tax Reminder Preferences</label>
+        <div class="flex space-x-6">
+          <label class="flex items-center">
+            <input type="checkbox" id="prefersPersonal" class="mr-2 text-blue-500 focus:ring-blue-500">
+            <span>Personal Deadlines</span>
+          </label>
+          <label class="flex items-center">
+            <input type="checkbox" id="prefersBusiness" class="mr-2 text-blue-500 focus:ring-blue-500">
+            <span>Business Deadlines</span>
+          </label>
+        </div>
       </div>
 
-      <button onclick="saveBusinessProfile()" class="gradient-bg text-white py-2 px-6 rounded">Save Profile</button>
-      <div id="profileSavedMsg" class="text-green-600 mt-3 hidden">✅ Profile saved successfully!</div>
+      <button onclick="saveBusinessProfile()" class="gradient-bg text-white py-3 px-6 rounded-lg mt-4 hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+        <i class="fas fa-save mr-2"></i>Save Profile
+      </button>
+      <div id="profileSavedMsg" class="text-green-600 mt-3 hidden">
+        <i class="fas fa-check-circle mr-2"></i>Profile saved successfully!
+      </div>
     </div>
   </div>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9800a0c023370704',t:'MTc1ODAyODQ3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
         <!-- Navigation -->
         <nav class="glass-effect shadow-sm sticky top-16 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
