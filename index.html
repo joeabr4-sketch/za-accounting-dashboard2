@@ -37,6 +37,17 @@
         document.getElementById("loginScreen")?.classList.add("hidden");
         document.getElementById("dashboard")?.classList.remove("hidden");
 
+        if (session) {
+  const user = session.user;
+
+  // Upsert profile with Google metadata
+  await supabaseClient.from("profiles").upsert({
+    id: user.id,
+    full_name: user.user_metadata.full_name,
+    avatar_url: user.user_metadata.avatar_url
+  });
+}
+
         // load countries when dashboard is visible
         loadCountries();
       }
