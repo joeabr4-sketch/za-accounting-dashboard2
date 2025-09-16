@@ -538,11 +538,26 @@
         const currency = window.selectedCurrency || 'USD';
         const currencySymbol = getCurrencySymbol(currency);
         
+        // Get receipt amounts based on selected currency
+        const receiptAmounts = {
+          'USD': { office: 127.45, gas: 65.30, coffee: 12.50 },
+          'GBP': { office: 101.25, gas: 51.85, coffee: 9.95 },
+          'EUR': { office: 117.30, gas: 60.15, coffee: 11.50 },
+          'CAD': { office: 172.05, gas: 88.20, coffee: 16.88 },
+          'AUD': { office: 192.25, gas: 98.55, coffee: 18.85 },
+          'ZAR': { office: 2386.75, gas: 1222.30, coffee: 233.75 },
+          'JPY': { office: 19118, gas: 9795, coffee: 1875 },
+          'INR': { office: 10621, gas: 5441, coffee: 1041 },
+          'BRL': { office: 638.25, gas: 326.50, coffee: 62.50 }
+        };
+        
+        const amounts = receiptAmounts[currency] || receiptAmounts['USD'];
+        
         const mockReceiptData = [
           { 
             vendor: 'Office Depot', 
             date: '2024-01-20', 
-            amount: 127.45, 
+            amount: amounts.office, 
             items: ['Paper (5 reams)', 'Pens (12 pack)', 'Stapler'], 
             category: 'Office Supplies',
             deductible: true 
@@ -550,7 +565,7 @@
           { 
             vendor: 'Shell Gas Station', 
             date: '2024-01-22', 
-            amount: 65.30, 
+            amount: amounts.gas, 
             items: ['Gasoline'], 
             category: 'Vehicle Expenses',
             deductible: true 
@@ -558,7 +573,7 @@
           { 
             vendor: 'Starbucks', 
             date: '2024-01-23', 
-            amount: 12.50, 
+            amount: amounts.coffee, 
             items: ['Coffee', 'Muffin'], 
             category: 'Meals & Entertainment',
             deductible: true 
@@ -631,6 +646,24 @@
         const currencySymbol = getCurrencySymbol(currency);
         const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
         
+        // Get report amounts based on selected currency
+        const reportAmounts = {
+          'USD': { clientPayments: 8500, consultingFees: 2200, office: 245.50, software: 299.97, vehicle: 180.30, meals: 125.80 },
+          'GBP': { clientPayments: 6750, consultingFees: 1750, office: 195.40, software: 238.50, vehicle: 143.25, meals: 100.00 },
+          'EUR': { clientPayments: 7820, consultingFees: 2025, office: 225.30, software: 276.00, vehicle: 166.00, meals: 115.80 },
+          'CAD': { clientPayments: 11475, consultingFees: 2970, office: 330.15, software: 404.96, vehicle: 243.41, meals: 169.83 },
+          'AUD': { clientPayments: 12835, consultingFees: 3322, office: 370.25, software: 452.96, vehicle: 272.05, meals: 189.71 },
+          'ZAR': { clientPayments: 159250, consultingFees: 41200, office: 4590.50, software: 5614.53, vehicle: 3375.61, meals: 2353.00 },
+          'JPY': { clientPayments: 1275000, consultingFees: 330000, office: 36750, software: 44996, vehicle: 27045, meals: 18870 },
+          'INR': { clientPayments: 708750, consultingFees: 183400, office: 20415, software: 24997, vehicle: 15025, meals: 10483 },
+          'BRL': { clientPayments: 42500, consultingFees: 11000, office: 1227.50, software: 1499.85, vehicle: 901.50, meals: 628.90 }
+        };
+        
+        const amounts = reportAmounts[currency] || reportAmounts['USD'];
+        const totalIncome = amounts.clientPayments + amounts.consultingFees;
+        const totalExpenses = amounts.office + amounts.software + amounts.vehicle + amounts.meals;
+        const netProfit = totalIncome - totalExpenses;
+        
         let html = `<div class="bg-white border border-gray-200 rounded-lg p-6 shadow-lg">
           <div class="text-center mb-6">
             <h3 class="text-2xl font-bold text-gray-800">Profit & Loss Statement</h3>
@@ -641,10 +674,10 @@
             <div>
               <h4 class="font-bold text-green-800 mb-3 text-lg">📈 INCOME</h4>
               <div class="space-y-2">
-                <div class="flex justify-between"><span>Client Payments</span><span class="font-bold text-green-600">+${currencySymbol}8,500.00</span></div>
-                <div class="flex justify-between"><span>Consulting Fees</span><span class="font-bold text-green-600">+${currencySymbol}2,200.00</span></div>
+                <div class="flex justify-between"><span>Client Payments</span><span class="font-bold text-green-600">+${currencySymbol}${amounts.clientPayments.toLocaleString()}</span></div>
+                <div class="flex justify-between"><span>Consulting Fees</span><span class="font-bold text-green-600">+${currencySymbol}${amounts.consultingFees.toLocaleString()}</span></div>
                 <div class="border-t pt-2 flex justify-between font-bold text-lg">
-                  <span>Total Income</span><span class="text-green-600">+${currencySymbol}10,700.00</span>
+                  <span>Total Income</span><span class="text-green-600">+${currencySymbol}${totalIncome.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -652,12 +685,12 @@
             <div>
               <h4 class="font-bold text-red-800 mb-3 text-lg">📉 EXPENSES</h4>
               <div class="space-y-2">
-                <div class="flex justify-between"><span>Office Supplies</span><span class="text-red-600">-${currencySymbol}245.50</span></div>
-                <div class="flex justify-between"><span>Software Subscriptions</span><span class="text-red-600">-${currencySymbol}299.97</span></div>
-                <div class="flex justify-between"><span>Vehicle Expenses</span><span class="text-red-600">-${currencySymbol}180.30</span></div>
-                <div class="flex justify-between"><span>Meals & Entertainment</span><span class="text-red-600">-${currencySymbol}125.80</span></div>
+                <div class="flex justify-between"><span>Office Supplies</span><span class="text-red-600">-${currencySymbol}${amounts.office.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Software Subscriptions</span><span class="text-red-600">-${currencySymbol}${amounts.software.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Vehicle Expenses</span><span class="text-red-600">-${currencySymbol}${amounts.vehicle.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Meals & Entertainment</span><span class="text-red-600">-${currencySymbol}${amounts.meals.toFixed(2)}</span></div>
                 <div class="border-t pt-2 flex justify-between font-bold text-lg">
-                  <span>Total Expenses</span><span class="text-red-600">-${currencySymbol}851.57</span>
+                  <span>Total Expenses</span><span class="text-red-600">-${currencySymbol}${totalExpenses.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -666,9 +699,9 @@
           <div class="mt-6 p-4 bg-blue-50 rounded-lg">
             <div class="flex justify-between items-center">
               <span class="text-xl font-bold text-gray-800">NET PROFIT</span>
-              <span class="text-2xl font-bold text-blue-600">${currencySymbol}9,848.43</span>
+              <span class="text-2xl font-bold text-blue-600">${currencySymbol}${netProfit.toLocaleString()}</span>
             </div>
-            <p class="text-sm text-gray-600 mt-2">Profit Margin: 92.0%</p>
+            <p class="text-sm text-gray-600 mt-2">Profit Margin: ${((netProfit / totalIncome) * 100).toFixed(1)}%</p>
           </div>
           
           <div class="mt-4 flex space-x-3">
@@ -739,6 +772,25 @@
         const currency = window.selectedCurrency || 'USD';
         const currencySymbol = getCurrencySymbol(currency);
         
+        // Get budget amounts based on selected currency
+        const budgetAmounts = {
+          'USD': { officeSpent: 245, officeBudget: 200, softwareSpent: 300, softwareBudget: 400, vehicleSpent: 180, vehicleBudget: 250, mealsSpent: 126, mealsBudget: 150 },
+          'GBP': { officeSpent: 195, officeBudget: 159, softwareSpent: 238, softwareBudget: 318, vehicleSpent: 143, vehicleBudget: 199, mealsSpent: 100, mealsBudget: 119 },
+          'EUR': { officeSpent: 225, officeBudget: 184, softwareSpent: 276, softwareBudget: 368, vehicleSpent: 166, vehicleBudget: 230, mealsSpent: 116, mealsBudget: 138 },
+          'CAD': { officeSpent: 330, officeBudget: 270, softwareSpent: 405, softwareBudget: 540, vehicleSpent: 243, vehicleBudget: 338, mealsSpent: 170, mealsBudget: 203 },
+          'AUD': { officeSpent: 370, officeBudget: 302, softwareSpent: 453, softwareBudget: 604, vehicleSpent: 272, vehicleBudget: 378, mealsSpent: 190, mealsBudget: 227 },
+          'ZAR': { officeSpent: 4591, officeBudget: 3750, softwareSpent: 5615, softwareBudget: 7487, vehicleSpent: 3376, vehicleBudget: 4688, mealsSpent: 2353, mealsBudget: 2813 },
+          'JPY': { officeSpent: 36750, officeBudget: 30000, softwareSpent: 44996, softwareBudget: 59995, vehicleSpent: 27045, vehicleBudget: 37500, mealsSpent: 18870, mealsBudget: 22500 },
+          'INR': { officeSpent: 20415, officeBudget: 16667, softwareSpent: 24997, softwareBudget: 33329, vehicleSpent: 15025, vehicleBudget: 20833, mealsSpent: 10483, mealsBudget: 12500 },
+          'BRL': { officeSpent: 1228, officeBudget: 1003, softwareSpent: 1500, softwareBudget: 2000, vehicleSpent: 902, vehicleBudget: 1252, mealsSpent: 629, mealsBudget: 751 }
+        };
+        
+        const amounts = budgetAmounts[currency] || budgetAmounts['USD'];
+        const totalBudget = amounts.officeBudget + amounts.softwareBudget + amounts.vehicleBudget + amounts.mealsBudget;
+        const totalSpent = amounts.officeSpent + amounts.softwareSpent + amounts.vehicleSpent + amounts.mealsSpent;
+        const remaining = totalBudget - totalSpent;
+        const overBudget = amounts.officeSpent - amounts.officeBudget;
+        
         let html = `<div class="bg-white border border-gray-200 rounded-lg p-6">
           <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="fas fa-piggy-bank mr-2 text-indigo-500"></i>Monthly Budget Tracker</h3>
           
@@ -746,55 +798,55 @@
             <div class="bg-gray-50 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="font-medium">Office Supplies</span>
-                <span class="text-sm text-gray-600">${currencySymbol}245 / ${currencySymbol}200</span>
+                <span class="text-sm text-gray-600">${currencySymbol}${amounts.officeSpent} / ${currencySymbol}${amounts.officeBudget}</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-red-500 h-3 rounded-full" style="width: 122%"></div>
+                <div class="bg-red-500 h-3 rounded-full" style="width: ${Math.min((amounts.officeSpent / amounts.officeBudget) * 100, 100)}%"></div>
               </div>
-              <p class="text-xs text-red-600 mt-1">⚠️ Over budget by ${currencySymbol}45</p>
+              <p class="text-xs text-red-600 mt-1">⚠️ Over budget by ${currencySymbol}${overBudget}</p>
             </div>
             
             <div class="bg-gray-50 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="font-medium">Software & Tools</span>
-                <span class="text-sm text-gray-600">${currencySymbol}300 / ${currencySymbol}400</span>
+                <span class="text-sm text-gray-600">${currencySymbol}${amounts.softwareSpent} / ${currencySymbol}${amounts.softwareBudget}</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-green-500 h-3 rounded-full" style="width: 75%"></div>
+                <div class="bg-green-500 h-3 rounded-full" style="width: ${(amounts.softwareSpent / amounts.softwareBudget) * 100}%"></div>
               </div>
-              <p class="text-xs text-green-600 mt-1">✓ ${currencySymbol}100 remaining</p>
+              <p class="text-xs text-green-600 mt-1">✓ ${currencySymbol}${amounts.softwareBudget - amounts.softwareSpent} remaining</p>
             </div>
             
             <div class="bg-gray-50 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="font-medium">Vehicle Expenses</span>
-                <span class="text-sm text-gray-600">${currencySymbol}180 / ${currencySymbol}250</span>
+                <span class="text-sm text-gray-600">${currencySymbol}${amounts.vehicleSpent} / ${currencySymbol}${amounts.vehicleBudget}</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-blue-500 h-3 rounded-full" style="width: 72%"></div>
+                <div class="bg-blue-500 h-3 rounded-full" style="width: ${(amounts.vehicleSpent / amounts.vehicleBudget) * 100}%"></div>
               </div>
-              <p class="text-xs text-blue-600 mt-1">✓ ${currencySymbol}70 remaining</p>
+              <p class="text-xs text-blue-600 mt-1">✓ ${currencySymbol}${amounts.vehicleBudget - amounts.vehicleSpent} remaining</p>
             </div>
             
             <div class="bg-gray-50 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="font-medium">Meals & Entertainment</span>
-                <span class="text-sm text-gray-600">${currencySymbol}126 / ${currencySymbol}150</span>
+                <span class="text-sm text-gray-600">${currencySymbol}${amounts.mealsSpent} / ${currencySymbol}${amounts.mealsBudget}</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-yellow-500 h-3 rounded-full" style="width: 84%"></div>
+                <div class="bg-yellow-500 h-3 rounded-full" style="width: ${(amounts.mealsSpent / amounts.mealsBudget) * 100}%"></div>
               </div>
-              <p class="text-xs text-yellow-600 mt-1">⚠️ ${currencySymbol}24 remaining</p>
+              <p class="text-xs text-yellow-600 mt-1">⚠️ ${currencySymbol}${amounts.mealsBudget - amounts.mealsSpent} remaining</p>
             </div>
           </div>
           
           <div class="mt-6 p-4 bg-indigo-50 rounded-lg">
             <h4 class="font-bold text-indigo-800 mb-2">Budget Summary</h4>
             <div class="grid grid-cols-2 gap-4 text-sm">
-              <div><span class="text-gray-600">Total Budget:</span> <span class="font-bold">${currencySymbol}1,000</span></div>
-              <div><span class="text-gray-600">Total Spent:</span> <span class="font-bold">${currencySymbol}851</span></div>
-              <div><span class="text-gray-600">Remaining:</span> <span class="font-bold text-green-600">${currencySymbol}149</span></div>
-              <div><span class="text-gray-600">Over Budget:</span> <span class="font-bold text-red-600">${currencySymbol}45</span></div>
+              <div><span class="text-gray-600">Total Budget:</span> <span class="font-bold">${currencySymbol}${totalBudget.toLocaleString()}</span></div>
+              <div><span class="text-gray-600">Total Spent:</span> <span class="font-bold">${currencySymbol}${totalSpent.toLocaleString()}</span></div>
+              <div><span class="text-gray-600">Remaining:</span> <span class="font-bold text-green-600">${currencySymbol}${Math.max(remaining, 0).toLocaleString()}</span></div>
+              <div><span class="text-gray-600">Over Budget:</span> <span class="font-bold text-red-600">${currencySymbol}${Math.max(overBudget, 0)}</span></div>
             </div>
           </div>
           
@@ -827,12 +879,27 @@
         const currency = window.selectedCurrency || 'USD';
         const currencySymbol = getCurrencySymbol(currency);
         
+        // Get currency amounts based on selected country
+        const baseAmounts = {
+          'USD': { office: 245.50, income: 2500.00, meal: 85.30, software: 99.99, personal: 156.78 },
+          'GBP': { office: 195.40, income: 1980.00, meal: 67.85, software: 79.50, personal: 124.60 },
+          'EUR': { office: 225.30, income: 2300.00, meal: 78.40, software: 92.00, personal: 144.20 },
+          'CAD': { office: 330.15, income: 3375.00, meal: 115.15, software: 134.99, personal: 211.55 },
+          'AUD': { office: 370.25, income: 3775.00, meal: 128.95, software: 150.99, personal: 236.67 },
+          'ZAR': { office: 4590.50, income: 46750.00, meal: 1596.30, software: 1869.99, personal: 2934.78 },
+          'JPY': { office: 36750, income: 374500, meal: 12795, software: 14999, personal: 23517 },
+          'INR': { office: 20415, income: 208250, meal: 7107, software: 8324, personal: 13064 },
+          'BRL': { office: 1227.50, income: 12500.00, meal: 426.50, software: 499.95, personal: 783.90 }
+        };
+        
+        const amounts = baseAmounts[currency] || baseAmounts['USD'];
+        
         const mockResults = [
-          { date: '2024-01-15', description: 'Office Supplies Store', amount: -245.50, category: 'Office Expenses', deductible: true },
-          { date: '2024-01-18', description: 'Client Payment - ABC Corp', amount: 2500.00, category: 'Business Income', deductible: false },
-          { date: '2024-01-22', description: 'Business Lunch - Restaurant', amount: -85.30, category: 'Meals & Entertainment', deductible: true },
-          { date: '2024-01-25', description: 'Software Subscription', amount: -99.99, category: 'Software/Technology', deductible: true },
-          { date: '2024-01-28', description: 'Personal Grocery Shopping', amount: -156.78, category: 'Personal Expense', deductible: false }
+          { date: '2024-01-15', description: 'Office Supplies Store', amount: -amounts.office, category: 'Office Expenses', deductible: true },
+          { date: '2024-01-18', description: 'Client Payment - ABC Corp', amount: amounts.income, category: 'Business Income', deductible: false },
+          { date: '2024-01-22', description: 'Business Lunch - Restaurant', amount: -amounts.meal, category: 'Meals & Entertainment', deductible: true },
+          { date: '2024-01-25', description: 'Software Subscription', amount: -amounts.software, category: 'Software/Technology', deductible: true },
+          { date: '2024-01-28', description: 'Personal Grocery Shopping', amount: -amounts.personal, category: 'Personal Expense', deductible: false }
         ];
         
         // Apply country-specific tax rules
@@ -1243,5 +1310,5 @@
       </div>
     </div>
   </div>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98010f47c46b06cf',t:'MTc1ODAzMzAwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98011c5187f63f1f',t:'MTc1ODAzMzUzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
